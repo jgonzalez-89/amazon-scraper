@@ -8,14 +8,18 @@ import datetime
 
 
 class OhPeluquerosSpider(scrapy.Spider):
-    name = "ohpeluqueros"
+    name = "OhPeluqueros"
     start_urls = ["https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680165461&ref=sr_pg_1"]
 
     def parse(self, response):
         for product in response.xpath("//div[contains(@class, 's-result-item')]"):
+            fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             yield {
+                "fecha": fecha,
+                "imagen": product.xpath(".//img[@class='s-image']/@src").get(),
                 "nombre": product.xpath(".//span[@class='a-size-medium a-color-base a-text-normal']/text()").get(),
                 "precio": product.xpath(".//span[@class='a-price']/span[@class='a-offscreen']/text()").get(),
+
             }
 
         siguiente_pagina = response.xpath(
@@ -28,7 +32,7 @@ class OhPeluquerosSpider(scrapy.Spider):
 
 
 class PyCProfesionalSpider(scrapy.Spider):
-    name = "pycprofesional"
+    name = "PCprofesional"
     start_urls = ["https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680079048&ref=sr_pg_1"]
     siguiente_urls = [
         "https://www.amazon.es/s?k=comfort+zone&i=merchant-items&me=A20JMG3VL3S0SU&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680170657&ref=sr_pg_1"]
@@ -40,9 +44,13 @@ class PyCProfesionalSpider(scrapy.Spider):
 
     def parse(self, response):
         for product in response.xpath("//div[contains(@class, 's-result-item')]"):
+            fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             yield {
+                "fecha": fecha,
+                "imagen": product.xpath(".//img[@class='s-image']/@src").get(),
                 "nombre": product.xpath(".//span[@class='a-size-medium a-color-base a-text-normal']/text()").get(),
                 "precio": product.xpath(".//span[@class='a-price']/span[@class='a-offscreen']/text()").get(),
+
             }
 
         siguiente_pagina = response.xpath(
@@ -61,14 +69,18 @@ class PyCProfesionalSpider(scrapy.Spider):
 
 
 class GoodCareCosmeticsSpider(scrapy.Spider):
-    name = "goodcare"
+    name = "GoodCareCosmetics"
     start_urls = ["https://www.amazon.es/s?k=davines&i=merchant-items&me=A2Q9EED12NJ5E7&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680171512&ref=sr_pg_1"]
 
     def parse(self, response):
         for product in response.xpath("//div[contains(@class, 's-result-item')]"):
+            fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             yield {
+                "fecha": fecha,
+                "imagen": product.xpath(".//img[@class='s-image']/@src").get(),
                 "nombre": product.xpath(".//span[@class='a-size-medium a-color-base a-text-normal']/text()").get(),
                 "precio": product.xpath(".//span[@class='a-price']/span[@class='a-offscreen']/text()").get(),
+
             }
 
         siguiente_pagina = response.xpath(
@@ -80,15 +92,19 @@ class GoodCareCosmeticsSpider(scrapy.Spider):
 
 
 class LevanitaShopSpider(scrapy.Spider):
-    name = "levanita"
+    name = "LevanitaShop"
     start_urls = [
         "https://www.amazon.es/s?i=merchant-items&me=ARU4EY0JBW4QF&rh=p_4%3ADavines&dc&marketplaceID=A1RKKUPIHCS9HS&qid=1680171671&ref=sr_pg_1"]
 
     def parse(self, response):
         for product in response.xpath("//div[contains(@class, 's-result-item')]"):
+            fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             yield {
+                "fecha": fecha,
+                "imagen": product.xpath(".//img[@class='s-image']/@src").get(),
                 "nombre": product.xpath(".//span[@class='a-size-medium a-color-base a-text-normal']/text()").get(),
                 "precio": product.xpath(".//span[@class='a-price']/span[@class='a-offscreen']/text()").get(),
+
             }
 
         siguiente_pagina = response.xpath(
@@ -101,15 +117,19 @@ class LevanitaShopSpider(scrapy.Spider):
 
 
 class LuiyLeiBeautySpider(scrapy.Spider):
-    name = "luiylei"
+    name = "LuiLeiBeauty"
     start_urls = [
         "https://www.amazon.es/s?i=merchant-items&me=A39TAVUW4PU0QM&rh=p_4%3ADavines&dc&marketplaceID=A1RKKUPIHCS9HS&qid=1680171845&ref=sr_pg_1"]
 
     def parse(self, response):
         for product in response.xpath("//div[contains(@class, 's-result-item')]"):
+            fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             yield {
+                "fecha": fecha,
+                "imagen": product.xpath(".//img[@class='s-image']/@src").get(),
                 "nombre": product.xpath(".//span[@class='a-size-medium a-color-base a-text-normal']/text()").get(),
                 "precio": product.xpath(".//span[@class='a-price']/span[@class='a-offscreen']/text()").get(),
+
             }
 
         siguiente_pagina = response.xpath(
@@ -122,14 +142,18 @@ class LuiyLeiBeautySpider(scrapy.Spider):
 
 
 class DudeBeautySpider(scrapy.Spider):
-    name = "dude"
+    name = "DudeBeauty"
     start_urls = ["https://www.amazon.es/s?k=davines&i=merchant-items&me=A37QTNEZV7YXX7&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680171983&ref=sr_pg_1"]
 
     def parse(self, response):
         for product in response.xpath("//div[contains(@class, 's-result-item')]"):
+            fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             yield {
+                "fecha": fecha,
+                "imagen": product.xpath(".//img[@class='s-image']/@src").get(),
                 "nombre": product.xpath(".//span[@class='a-size-medium a-color-base a-text-normal']/text()").get(),
                 "precio": product.xpath(".//span[@class='a-price']/span[@class='a-offscreen']/text()").get(),
+
             }
 
         siguiente_pagina = response.xpath(
@@ -141,14 +165,18 @@ class DudeBeautySpider(scrapy.Spider):
 
 
 class KapylookSpider(scrapy.Spider):
-    name = "kapylook"
+    name = "KapyLook"
     start_urls = ["https://www.amazon.es/s?k=davines&i=merchant-items&me=A1BO9PIJML2J6T&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680172110&ref=sr_pg_1"]
 
     def parse(self, response):
         for product in response.xpath("//div[contains(@class, 's-result-item')]"):
+            fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             yield {
+                "fecha": fecha,
+                "imagen": product.xpath(".//img[@class='s-image']/@src").get(),
                 "nombre": product.xpath(".//span[@class='a-size-medium a-color-base a-text-normal']/text()").get(),
                 "precio": product.xpath(".//span[@class='a-price']/span[@class='a-offscreen']/text()").get(),
+
             }
 
         siguiente_pagina = response.xpath(
@@ -161,15 +189,19 @@ class KapylookSpider(scrapy.Spider):
 
 
 class HairLlowersSpider(scrapy.Spider):
-    name = "hairllowers"
+    name = "Hairlowers"
     start_urls = [
         "https://www.amazon.es/s?k=davines&me=A2HQ75FBFCD779&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&ref=nb_sb_noss"]
 
     def parse(self, response):
         for product in response.xpath("//div[contains(@class, 's-result-item')]"):
+            fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             yield {
+                "fecha": fecha,
+                "imagen": product.xpath(".//img[@class='s-image']/@src").get(),
                 "nombre": product.xpath(".//span[@class='a-size-medium a-color-base a-text-normal']/text()").get(),
                 "precio": product.xpath(".//span[@class='a-price']/span[@class='a-offscreen']/text()").get(),
+
             }
 
         siguiente_pagina = response.xpath(
@@ -182,22 +214,40 @@ class HairLlowersSpider(scrapy.Spider):
 
 
 class CorradoEquipeSpider(scrapy.Spider):
-    name = "corrado"
+    name = "CorradoEquipe"
     start_urls = [
         "https://www.amazon.es/s?i=merchant-items&me=A39L21XYESRIXS&rh=p_4%3ADavines&dc&marketplaceID=A1RKKUPIHCS9HS&qid=1680172429&ref=sr_pg_1"]
 
     def parse(self, response):
         for product in response.xpath("//div[contains(@class, 's-result-item')]"):
+            fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             yield {
+                "fecha": fecha,
+                "imagen": product.xpath(".//img[@class='s-image']/@src").get(),
                 "nombre": product.xpath(".//span[@class='a-size-medium a-color-base a-text-normal']/text()").get(),
                 "precio": product.xpath(".//span[@class='a-price']/span[@class='a-offscreen']/text()").get(),
-                "imagen": product.xpath(".//img[@class='s-image']/@src").get(),
+
             }
 
         siguiente_pagina = response.xpath(
             "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
         if siguiente_pagina:
             yield response.follow(siguiente_pagina, self.parse)
+
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 
 
 class ProhairstoreSpider(scrapy.Spider):
@@ -258,18 +308,18 @@ class BookSpider(scrapy.Spider):
 
     def parse(self, response):
         for product in response.xpath("//li[contains(@class, 'col-xs-6')]"):
-            fecha_hora_actual = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             yield {
                 "imagen": product.xpath(".//img/@src").get(),
                 "nombre": product.xpath(".//h3/a/@title").get(),
                 "precio": product.xpath(".//div[contains(@class, 'product_price')]/p[contains(@class, 'price_color')]/text()").get(),
-                "fecha_hora": fecha_hora_actual,
+                "fecha": fecha,
 
             }
 
-        siguiente_pagina = response.xpath("//li[@class='next']/a/@href").get()
-        if siguiente_pagina:
-            yield response.follow(siguiente_pagina, self.parse)
+        # siguiente_pagina = response.xpath("//li[@class='next']/a/@href").get()
+        # if siguiente_pagina:
+        #     yield response.follow(siguiente_pagina, self.parse)
 
 
 # class AmazonSpider(scrapy.Spider):
