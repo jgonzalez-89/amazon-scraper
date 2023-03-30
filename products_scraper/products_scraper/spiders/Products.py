@@ -18,6 +18,7 @@ import scrapy
 #     siguiente_pagina = response.xpath("//ul[contains(@class, 's-pagination')]/li[@class='s-pagination-item']/a[contains(@class, 's-pagination-item') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
 #     if siguiente_pagina:
 #         yield response.follow(siguiente_pagina, self.parse)
+
 class ProductosSpider(scrapy.Spider):
     name = "amazon"
     start_urls = ["https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680079048&ref=sr_pg_1"]
@@ -30,9 +31,10 @@ class ProductosSpider(scrapy.Spider):
             }
 
         siguiente_pagina = response.xpath(
-            "//a[@class='s-pagination-item s-pagination-disabled']/following-sibling::a[1]/@href").get()
+            "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
         if siguiente_pagina:
             yield response.follow(siguiente_pagina, self.parse)
+
 
 
 class BookSpider(scrapy.Spider):
