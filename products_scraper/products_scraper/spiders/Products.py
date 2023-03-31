@@ -13,30 +13,73 @@ Session = sessionmaker(bind=engine)
 
 
 class OhPeluquerosSpider(scrapy.Spider):
-    name = "OhPeluqueros"
+    name = "ohpeluqueros"
     start_urls = ["https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680165461&ref=sr_pg_1"]
 
     def parse(self, response):
+        session = Session()
         for product in response.xpath("//div[contains(@class, 's-result-item')]"):
             fecha = datetime.datetime.now().strftime("%d-%m-%Y")
-            nombre = product.xpath(
-                ".//span[@class='a-size-medium a-color-base a-text-normal']/text()").get()
+            nombre = product.xpath(".//span[@class='a-size-medium a-color-base a-text-normal']/text()").get()
 
             if nombre:
                 nombre = nombre.replace('"', '').lower()
 
-                yield {
-                    "fecha": fecha,
-                    "imagen": product.xpath(".//img[@class='s-image']/@src").get(),
-                    "nombre": nombre,
-                    "distribuidor": "OhPeluqueros",
-                    "precio": product.xpath(".//span[@class='a-price']/span[@class='a-offscreen']/text()").get(),
-                }
+                item = Producto(
+                    fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
+                    imagen=product.xpath(
+                        ".//img[@class='s-image']/@src").get(),
+                    nombre=nombre,
+                    distribuidor="OhPeluqueros",
+                    precio=float(product.xpath(
+                        ".//span[@class='a-price']/span[@class='a-offscreen']/text()").re_first(r"[-+]?\d*\.\d+|\d+"))
+                )
 
-        siguiente_pagina = response.xpath(
-            "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+                try:
+                    session.add(item)
+                    session.commit()
+
+                    yield {
+                        "fecha": fecha,
+                        "imagen": item.imagen,
+                        "nombre": item.nombre,
+                        "distribuidor": item.distribuidor,
+                        "precio": item.precio,
+                    }
+                except Exception as e:
+                    self.logger.error(
+                        f"Error al insertar el item en la base de datos: {e}")
+                    session.rollback()
+
+        siguiente_pagina = response.xpath("//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
         if siguiente_pagina:
             yield response.follow(siguiente_pagina, self.parse)
+
+        session.close()
+
+
+
+    # def parse(self, response):
+    #     for product in response.xpath("//div[contains(@class, 's-result-item')]"):
+    #         fecha = datetime.datetime.now().strftime("%d-%m-%Y")
+    #         nombre = product.xpath(
+    #             ".//span[@class='a-size-medium a-color-base a-text-normal']/text()").get()
+
+    #         if nombre:
+    #             nombre = nombre.replace('"', '').lower()
+
+    #             yield {
+    #                 "fecha": fecha,
+    #                 "imagen": product.xpath(".//img[@class='s-image']/@src").get(),
+    #                 "nombre": nombre,
+    #                 "distribuidor": "OhPeluqueros",
+    #                 "precio": product.xpath(".//span[@class='a-price']/span[@class='a-offscreen']/text()").get(),
+    #             }
+
+    #     siguiente_pagina = response.xpath(
+    #         "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+    #     if siguiente_pagina:
+    #         yield response.follow(siguiente_pagina, self.parse)
 
 
 ############################################################### P&C PROFESIONAL ###############################################################
@@ -320,7 +363,8 @@ class BookSpider(Spider):
                     imagen=product.xpath(".//img/@src").get(),
                     nombre=nombre,
                     distribuidor="Books",
-                    precio=float(product.xpath(".//div[contains(@class, 'product_price')]/p[contains(@class, 'price_color')]/text()").re_first(r"[-+]?\d*\.\d+|\d+"))
+                    precio=float(product.xpath(
+                        ".//div[contains(@class, 'product_price')]/p[contains(@class, 'price_color')]/text()").re_first(r"[-+]?\d*\.\d+|\d+"))
                 )
 
                 # print(f"Item extraído: {item}")  # Imprime el objeto item
@@ -339,7 +383,8 @@ class BookSpider(Spider):
                         "precio": item.precio,
                     }
                 except Exception as e:
-                    self.logger.error(f"Error al insertar el item en la base de datos: {e}")
+                    self.logger.error(
+                        f"Error al insertar el item en la base de datos: {e}")
                     session.rollback()
 
         session.close()
@@ -347,8 +392,6 @@ class BookSpider(Spider):
         # siguiente_pagina = response.xpath("//li[@class='next']/a/@href").get()
         # if siguiente_pagina:
         #     yield response.follow(siguiente_pagina, self.parse)
-
-
 
     # def parse(self, response):
     #     session = Session()  # Crear una nueva instancia de sesión
