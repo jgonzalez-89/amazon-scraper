@@ -1,5 +1,10 @@
 import scrapy
+from scrapy.spiders import Spider
 import datetime
+from sqlalchemy.orm import sessionmaker
+from products_scraper.spiders.models import Producto, engine
+
+Session = sessionmaker(bind=engine)
 
 # comando para ejecutar el scraper : scrapy crawl amazon -o amazon.json
 
@@ -296,25 +301,88 @@ class CorradoEquipeSpider(scrapy.Spider):
 #
 ################### TEST ###################
 
-# class BookSpider(scrapy.Spider):
-#     name = "bookspider"
-#     start_urls = ["http://books.toscrape.com/"]
 
-#     def parse(self, response):
-#         for product in response.xpath("//li[contains(@class, 'col-xs-6')]"):
-#             fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-#             yield {
-#                 "imagen": product.xpath(".//img/@src").get(),
-#                 "nombre": product.xpath(".//h3/a/@title").get(),
-#                 "precio": product.xpath(".//div[contains(@class, 'product_price')]/p[contains(@class, 'price_color')]/text()").get(),
-#                 "fecha": fecha,
+class BookSpider(Spider):
+    name = "bookspider"
+    start_urls = ["http://books.toscrape.com/"]
 
-#             }
+    def parse(self, response):
+        session = Session()
+        for product in response.xpath("//article[@class='product_pod']"):
+            fecha = datetime.datetime.now().strftime("%d-%m-%Y")
+            nombre = product.xpath(".//h3/a/@title").get()
 
-#         siguiente_pagina = response.xpath("//li[@class='next']/a/@href").get()
-#         if siguiente_pagina:
-#             yield response.follow(siguiente_pagina, self.parse)
+            if nombre:
+                nombre = nombre.replace('"', '').lower()
 
+                item = Producto(
+                    fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
+                    imagen=product.xpath(".//img/@src").get(),
+                    nombre=nombre,
+                    distribuidor="Books",
+                    precio=float(product.xpath(".//div[contains(@class, 'product_price')]/p[contains(@class, 'price_color')]/text()").re_first(r"[-+]?\d*\.\d+|\d+"))
+                )
+
+                # print(f"Item extraído: {item}")  # Imprime el objeto item
+
+                try:
+                    session.add(item)
+                    session.commit()
+
+                    print(f"Item guardado en la base de datos: {item}")
+
+                    yield {
+                        "fecha": fecha,
+                        "imagen": item.imagen,
+                        "nombre": item.nombre,
+                        "distribuidor": item.distribuidor,
+                        "precio": item.precio,
+                    }
+                except Exception as e:
+                    self.logger.error(f"Error al insertar el item en la base de datos: {e}")
+                    session.rollback()
+
+        session.close()
+
+        # siguiente_pagina = response.xpath("//li[@class='next']/a/@href").get()
+        # if siguiente_pagina:
+        #     yield response.follow(siguiente_pagina, self.parse)
+
+
+
+    # def parse(self, response):
+    #     session = Session()  # Crear una nueva instancia de sesión
+    #     for product in response.xpath("//li[contains(@class, 'col-xs-6')]"):
+    #         fecha = datetime.now().strftime("%d-%m-%Y")
+    #         nombre = product.xpath(".//h3/a/@title").get()
+
+    #         if nombre:
+    #             nombre = nombre.replace('"', '').lower()
+
+    #             item = Producto(
+    #                 fecha=datetime.strptime(fecha, "%d-%m-%Y").date(),
+    #                 imagen=product.xpath(".//img/@src").get(),
+    #                 nombre=nombre,
+    #                 distribuidor="Books",
+    #                 precio=float(product.xpath(".//div[contains(@class, 'product_price')]/p[contains(@class, 'price_color')]/text()").get())
+    #             )
+
+    #             session.add(item)
+    #             session.commit()
+
+    #             yield {
+    #                 "fecha": fecha,
+    #                 "imagen": item.imagen,
+    #                 "nombre": item.nombre,
+    #                 "distribuidor": item.distribuidor,
+    #                 "precio": item.precio,
+    #             }
+
+    #     session.close()  # Cerrar la sesión después de procesar todos los productos en la página
+
+    #     siguiente_pagina = response.xpath("//li[@class='next']/a/@href").get()
+    #     if siguiente_pagina:
+    #         yield response.follow(siguiente_pagina, self.parse)
 #
 #
 #
