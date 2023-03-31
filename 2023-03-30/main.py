@@ -20,8 +20,10 @@ for archivo in archivos_csv:
 
         # Añade las filas del archivo CSV a la lista 'filas'
         for fila in lector_csv:
-            # Ignora las filas vacías o que no tienen un nombre en la columna 2
-            if len(fila) > 1 and fila[1]:
+            # Ignora las filas que no tienen un nombre en la columna 2 o que el nombre solo contiene espacios en blanco
+            if len(fila) > 1 and fila[1].strip():
+                # Elimina las comillas dobles de todos los campos en la fila
+                fila = [campo.replace('"', '') for campo in fila]
                 filas.append(fila)
 
 # Ordena las filas en base al campo "Nombre" (asumiendo que está en la columna 2, índice 1)
