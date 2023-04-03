@@ -651,3 +651,188 @@ JavaScript error: resource://gre/modules/AsyncShutdown.sys.mjs, line 727: Error:
 JavaScript error: resource://gre/modules/AsyncShutdown.sys.mjs, line 727: Error: Phase "profile-before-change" is finished, it is too late to register completion condition "OS.File: flush I/O queued before profileBeforeChange"
 JavaScript error: resource://gre/modules/AsyncShutdown.sys.mjs, line 727: Error: Phase "profile-before-change" is finished, it is too late to register completion condition "OS.File: flush I/O queued before profileBeforeChange"
 JavaScript error: resource://gre/modules/AsyncShutdown.sys.mjs, line 727: Error: Phase "profile-before-change" is finished, it is too late to register completion condition "OS.File: flush I/O queued before profileBeforeChange"
+1680527431671	geckodriver	INFO	Listening on 127.0.0.1:54024
+1680527434706	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "--remote-debugging-port" "54025" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofileN2C6f6"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1680527435214	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1680527435218	Marionette	INFO	Listening on port 54033
+Read port: 54033
+WebDriver BiDi listening on ws://127.0.0.1:54025
+1680527435305	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofileN2C6f6\\search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:54025/devtools/browser/88a89f3f-7c32-44bb-a7f2-54d7728a7a32
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680165461&ref=sr_pg_1 line 3430 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&page=2&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527436&ref=sr_pg_1 line 3445 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&page=3&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527442&ref=sr_pg_2 line 3445 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&page=4&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527449&ref=sr_pg_3 line 3431 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&page=5&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527455&ref=sr_pg_4 line 3307 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&page=6&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527462&ref=sr_pg_5 line 3431 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&page=7&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527468&ref=sr_pg_6 line 3431 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&page=8&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527475&ref=sr_pg_7 line 3445 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&page=9&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527482&ref=sr_pg_8 line 3431 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&page=10&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527489&ref=sr_pg_9 line 3445 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&page=11&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527495&ref=sr_pg_10 line 3429 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://m.media-amazon.com/images/I/8177Ei5Hu9L.js?AUIClients/FWCIMAssets, line 298: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+1680533729186	Marionette	INFO	Stopped listening on port 54033
+Dynamically enable window occlusion 1
+ices.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1680527515472	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1680527515476	Marionette	INFO	Listening on port 54124
+Read port: 54124
+WebDriver BiDi listening on ws://127.0.0.1:54116
+1680527515548	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofilesggqXT\\search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:54116/devtools/browser/4c24ac42-9a7a-4840-8793-f23bcd99c0d7
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680079048&ref=sr_pg_1 line 3279 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&page=2&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527516&ref=sr_pg_1 line 2845 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&page=3&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527518&ref=sr_pg_2 line 3280 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&page=4&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527522&ref=sr_pg_3 line 3266 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&page=5&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527525&ref=sr_pg_4 line 3266 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&page=6&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527527&ref=sr_pg_5 line 3266 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&page=7&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527530&ref=sr_pg_6 line 3280 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&page=8&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527532&ref=sr_pg_7 line 3280 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&page=9&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527537&ref=sr_pg_8 line 3266 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&page=10&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527540&ref=sr_pg_9 line 3280 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&page=11&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527542&ref=sr_pg_10 line 3266 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&page=12&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527545&ref=sr_pg_11 line 3266 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&page=13&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527547&ref=sr_pg_12 line 3266 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&page=14&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527550&ref=sr_pg_13 line 3194 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+[Parent 13708, IPC I/O Parent] WARNING: DuplicateHandle failed for handle 0 in TransferHandles: file /builds/worker/checkouts/gecko/ipc/chromium/src/chrome/common/ipc_channel_win.cc:777
+JavaScript warning: https://www.amazon.es/s?k=comfort+zone&i=merchant-items&me=A20JMG3VL3S0SU&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680170657&ref=sr_pg_1 line 2967 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=comfort+zone&i=merchant-items&me=A20JMG3VL3S0SU&page=2&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527555&ref=sr_pg_1 line 2969 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=comfort+zone&i=merchant-items&me=A20JMG3VL3S0SU&page=3&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527557&ref=sr_pg_2 line 2969 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=comfort+zone&i=merchant-items&me=A20JMG3VL3S0SU&page=4&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527559&ref=sr_pg_3 line 2969 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=comfort+zone&i=merchant-items&me=A20JMG3VL3S0SU&page=5&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527562&ref=sr_pg_4 line 2961 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+1680533729188	Marionette	INFO	Stopped listening on port 54124
+Dynamically enable window occlusion 1
+efox.exe" "--marionette" "--remote-debugging-port" "54204" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofileBdKoWM"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1680527574660	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1680527574664	Marionette	INFO	Listening on port 54212
+Read port: 54212
+WebDriver BiDi listening on ws://127.0.0.1:54204
+1680527574740	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofileBdKoWM\\search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:54204/devtools/browser/62b33899-ce1b-43a0-b744-aee6178901dc
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A2Q9EED12NJ5E7&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680171512&ref=sr_pg_1 line 3075 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A2Q9EED12NJ5E7&page=2&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527575&ref=sr_pg_1 line 3076 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A2Q9EED12NJ5E7&page=3&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527577&ref=sr_pg_2 line 3090 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A2Q9EED12NJ5E7&page=4&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527580&ref=sr_pg_3 line 3090 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A2Q9EED12NJ5E7&page=5&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527582&ref=sr_pg_4 line 3044 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://m.media-amazon.com/images/I/8177Ei5Hu9L.js?AUIClients/FWCIMAssets, line 298: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+1680533729188	Marionette	INFO	Stopped listening on port 54212
+Dynamically enable window occlusion 1
+ices.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1680527594670	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1680527594673	Marionette	INFO	Listening on port 54285
+Read port: 54285
+WebDriver BiDi listening on ws://127.0.0.1:54277
+1680527594749	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofiletZua4H\\search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:54277/devtools/browser/b78afc6d-17d2-4c68-a6df-133611747d73
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=ARU4EY0JBW4QF&rh=p_4%3ADavines&dc&marketplaceID=A1RKKUPIHCS9HS&qid=1680171671&ref=sr_pg_1 line 2997 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=ARU4EY0JBW4QF&rh=p_4%3ADavines&dc&page=2&marketplaceID=A1RKKUPIHCS9HS&qid=1680527595&ref=sr_pg_1 line 2998 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=ARU4EY0JBW4QF&rh=p_4%3ADavines&dc&page=3&marketplaceID=A1RKKUPIHCS9HS&qid=1680527597&ref=sr_pg_2 line 2998 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=ARU4EY0JBW4QF&rh=p_4%3ADavines&dc&page=4&marketplaceID=A1RKKUPIHCS9HS&qid=1680527600&ref=sr_pg_3 line 2998 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=ARU4EY0JBW4QF&rh=p_4%3ADavines&dc&page=5&marketplaceID=A1RKKUPIHCS9HS&qid=1680527602&ref=sr_pg_4 line 2984 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=ARU4EY0JBW4QF&rh=p_4%3ADavines&dc&page=6&marketplaceID=A1RKKUPIHCS9HS&qid=1680527605&ref=sr_pg_5 line 2984 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=ARU4EY0JBW4QF&rh=p_4%3ADavines&dc&page=7&marketplaceID=A1RKKUPIHCS9HS&qid=1680527607&ref=sr_pg_6 line 2912 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+1680533729188	Marionette	INFO	Stopped listening on port 54285
+Dynamically enable window occlusion 1
+efox.exe" "--marionette" "--remote-debugging-port" "54350" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofile4wilEJ"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1680527622460	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1680527622463	Marionette	INFO	Listening on port 54358
+Read port: 54358
+WebDriver BiDi listening on ws://127.0.0.1:54350
+1680527622540	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofile4wilEJ\\search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:54350/devtools/browser/48166765-e650-4ee5-a0bf-6affefd94bad
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=A39TAVUW4PU0QM&rh=p_4%3ADavines&dc&marketplaceID=A1RKKUPIHCS9HS&qid=1680171845&ref=sr_pg_1 line 2969 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=A39TAVUW4PU0QM&rh=p_4%3ADavines&dc&page=2&marketplaceID=A1RKKUPIHCS9HS&qid=1680527623&ref=sr_pg_1 line 2970 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=A39TAVUW4PU0QM&rh=p_4%3ADavines&dc&page=3&marketplaceID=A1RKKUPIHCS9HS&qid=1680527625&ref=sr_pg_2 line 2970 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=A39TAVUW4PU0QM&rh=p_4%3ADavines&dc&page=4&marketplaceID=A1RKKUPIHCS9HS&qid=1680527627&ref=sr_pg_3 line 2970 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=A39TAVUW4PU0QM&rh=p_4%3ADavines&dc&page=5&marketplaceID=A1RKKUPIHCS9HS&qid=1680527629&ref=sr_pg_4 line 2946 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+1680533729171	Marionette	INFO	Stopped listening on port 54358
+Dynamically enable window occlusion 1
+efox.exe" "--marionette" "--remote-debugging-port" "54424" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofilevbU7Wu"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1680527641340	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1680527641344	Marionette	INFO	Listening on port 54432
+Read port: 54432
+WebDriver BiDi listening on ws://127.0.0.1:54424
+1680527641421	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofilevbU7Wu\\search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:54424/devtools/browser/9b9e832b-77ea-4a3f-943c-593b98170e2a
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A37QTNEZV7YXX7&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680171983&ref=sr_pg_1 line 2879 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A37QTNEZV7YXX7&page=2&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527642&ref=sr_pg_1 line 2894 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A37QTNEZV7YXX7&page=3&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527644&ref=sr_pg_2 line 2776 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+1680533729182	Marionette	INFO	Stopped listening on port 54432
+Dynamically enable window occlusion 1
+efox.exe" "--marionette" "--remote-debugging-port" "54493" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofilelqEYu1"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1680527656672	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1680527656675	Marionette	INFO	Listening on port 54501
+Read port: 54501
+WebDriver BiDi listening on ws://127.0.0.1:54493
+1680527656749	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofilelqEYu1\\search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:54493/devtools/browser/28b3d3f5-234b-4438-b086-dbe615bd3abe
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1BO9PIJML2J6T&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680172110&ref=sr_pg_1 line 3100 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1BO9PIJML2J6T&page=2&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527657&ref=sr_pg_1 line 3115 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1BO9PIJML2J6T&page=3&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527660&ref=sr_pg_2 line 3101 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?k=davines&i=merchant-items&me=A1BO9PIJML2J6T&page=4&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680527662&ref=sr_pg_3 line 3013 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://m.media-amazon.com/images/I/8177Ei5Hu9L.js?AUIClients/FWCIMAssets, line 298: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+1680533729186	Marionette	INFO	Stopped listening on port 54501
+Dynamically enable window occlusion 1
+ices.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1680527673920	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1680527673923	Marionette	INFO	Listening on port 54571
+Read port: 54571
+WebDriver BiDi listening on ws://127.0.0.1:54563
+1680527673999	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofilefDVCa3\\search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:54563/devtools/browser/497b73bd-b956-41e0-934e-3744b4fc05bc
+JavaScript warning: https://www.amazon.es/s?k=davines&me=A2HQ75FBFCD779&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&ref=nb_sb_noss line 2961 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+1680533729190	Marionette	INFO	Stopped listening on port 54571
+Dynamically enable window occlusion 1
+efox.exe" "--marionette" "--remote-debugging-port" "54632" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofileh7K30b"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1680527684545	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1680527684548	Marionette	INFO	Listening on port 54640
+Read port: 54640
+WebDriver BiDi listening on ws://127.0.0.1:54632
+1680527684622	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+console.warn: SearchSettings: "get: No settings file exists, new profile?" (new NotFoundError("Could not open the file at C:\\Users\\Dani\\AppData\\Local\\Temp\\rust_mozprofileh7K30b\\search.json.mozlz4", (void 0)))
+DevTools listening on ws://127.0.0.1:54632/devtools/browser/03a69973-724b-49c6-9142-cc879fb98088
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=A39L21XYESRIXS&rh=p_4%3ADavines&dc&marketplaceID=A1RKKUPIHCS9HS&qid=1680172429&ref=sr_pg_1 line 2867 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript warning: https://www.amazon.es/s?i=merchant-items&me=A39L21XYESRIXS&rh=p_4%3ADavines&dc&page=2&marketplaceID=A1RKKUPIHCS9HS&qid=1680527685&ref=sr_pg_1 line 2904 > injectedScript, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
+1680533729182	Marionette	INFO	Stopped listening on port 54640
+Dynamically enable window occlusion 1

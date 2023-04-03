@@ -5,7 +5,7 @@ import shutil
 from datetime import datetime
 
 # aranas = ['bookspider']
-aranas = ['OhPeluqueros', 'PCprofesional', 'GoodCareCosmetics', 'LevanitaShop',
+aranas = ['ohpeluqueros', 'PCprofesional', 'GoodCareCosmetics', 'LevanitaShop',
           'LuiLeiBeauty', 'DudeBeauty', 'KapyLook', 'Hairlowers', 'CorradoEquipe']
 
 def lanzar_aranas():
