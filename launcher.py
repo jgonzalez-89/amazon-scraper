@@ -4,24 +4,28 @@ import subprocess
 import shutil
 from datetime import datetime
 
-# aranas = ['bookspider']
-aranas = ['OhPeluqueros', 'PCprofesional', 'GoodCareCosmetics', 'LevanitaShop',
-          'LuiLeiBeauty', 'DudeBeauty', 'KapyLook', 'Hairlowers', 'CorradoEquipe']
+aranas = ['bookspider']
+# aranas = ['ohpeluqueros', 'pcprofesional', 'goodcarecosmetics', 'levanitashop',
+#           'luileibeauty', 'dudebeauty', 'kapylook', 'hairlowers', 'corradoequipe']
+
 
 def lanzar_aranas():
     for arana in aranas:
         comando = f'scrapy crawl {arana} -o {arana}.csv'
         subprocess.run(comando, shell=True)
 
+
 def crear_carpeta(ruta_carpeta):
     if not os.path.exists(ruta_carpeta):
         os.makedirs(ruta_carpeta)
+
 
 def mover_archivos(nombres_archivos, origen, destino):
     for nombre_archivo in nombres_archivos:
         ruta_archivo_origen = os.path.join(origen, nombre_archivo)
         ruta_archivo_destino = os.path.join(destino, nombre_archivo)
         shutil.move(ruta_archivo_origen, ruta_archivo_destino)
+
 
 ruta_actual = os.path.dirname(os.path.abspath(__file__))
 entorno = os.path.join(ruta_actual, 'venv', 'Scripts', 'activate_this.py')
@@ -42,8 +46,8 @@ ruta_carpeta_output = os.path.join(ruta_actual, fecha_actual)
 crear_carpeta(ruta_carpeta_output)
 
 # Mover los archivos de salida a la carpeta con la fecha actual
-mover_archivos(nombres_archivos_salida, ruta_proyecto_scrapy, ruta_carpeta_output)
-
+mover_archivos(nombres_archivos_salida,
+               ruta_proyecto_scrapy, ruta_carpeta_output)
 
 
 # Version 1.0
