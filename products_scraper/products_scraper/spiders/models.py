@@ -12,6 +12,7 @@ class Producto(Base):
     imagen = Column(String)
     nombre = Column(String)
     distribuidor = Column(String)
+    codigo=Column(String)
     precio = Column(Float)
 
 # Reemplaza los siguientes valores con los de tu configuración de MySQL
