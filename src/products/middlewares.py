@@ -18,7 +18,7 @@
 #         return HtmlResponse(self.driver.current_url, body=self.driver.page_source, encoding='utf-8', request=request)
 
 
-# # Version 1.0.1 sleep de 4 segundos
+# # Version 1.0.1 sleep de 1 segundos
 import time
 from scrapy.http import HtmlResponse
 from selenium.webdriver import Firefox
@@ -30,7 +30,7 @@ class SeleniumMiddleware:
 
     def process_request(self, request, spider):
         self.driver.get(request.url)
-        time.sleep(1)  # pausa de 4 segundos
+        time.sleep(0)  # pausa de 1 segundos
         return HtmlResponse(self.driver.current_url, body=self.driver.page_source, encoding='utf-8', request=request)
     
 # Version 1.0

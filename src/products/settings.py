@@ -9,8 +9,8 @@
 
 BOT_NAME = "products_scraper"
 
-SPIDER_MODULES = ["products_scraper.spiders"]
-NEWSPIDER_MODULE = "products_scraper.spiders"
+SPIDER_MODULES = ["products.spiders"]
+NEWSPIDER_MODULE = "products.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -93,7 +93,7 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
 DOWNLOADER_MIDDLEWARES = {
-    'products_scraper.middlewares.SeleniumMiddleware': 1,
+    'products.middlewares.SeleniumMiddleware': 1,
 }
 
 # Opcional: configurar el tiempo de espera para evitar ser bloqueado por el sitio web

@@ -4,9 +4,9 @@ import subprocess
 import shutil
 from datetime import datetime
 
-aranas = ['bookspider']
-# aranas = ['ohpeluqueros', 'pcprofesional', 'goodcarecosmetics', 'levanitashop',
-#           'luileibeauty', 'dudebeauty', 'kapylook', 'hairlowers', 'corradoequipe']
+# aranas = ['bookspider']
+aranas = ['ohpeluqueros', 'pcprofesional', 'goodcarecosmetics', 'levanitashop',
+          'luileibeauty', 'dudebeauty', 'kapylook', 'hairlowers', 'corradoequipe']
 
 
 def lanzar_aranas():
@@ -33,7 +33,7 @@ entorno = os.path.join(ruta_actual, 'venv', 'Scripts', 'activate_this.py')
 with open(entorno) as file_:
     exec(file_.read(), dict(__file__=entorno))
 
-ruta_proyecto_scrapy = os.path.join(ruta_actual, 'products_scraper')
+ruta_proyecto_scrapy = os.path.join(ruta_actual, 'src')
 os.chdir(ruta_proyecto_scrapy)
 
 lanzar_aranas()
