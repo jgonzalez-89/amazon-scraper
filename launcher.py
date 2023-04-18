@@ -4,10 +4,10 @@ import subprocess
 import shutil
 from datetime import datetime
 
-aranas = ['bookspider']
-# aranas = ['ohpeluqueros', 'pcprofesional', 'goodcarecosmetics', 'levanitashop',
-#           'luileibeauty', 'dudebeauty', 'kapylook', 'hairlowers', 'corradoequipe']
 
+# aranas = ['bookspider']
+aranas = ['ohpeluqueros', 'PCprofesional', 'GoodCareCosmetics', 'LevanitaShop',
+          'LuiLeiBeauty', 'DudeBeauty', 'KapyLook', 'Hairlowers', 'CorradoEquipe']
 
 def lanzar_aranas():
     for arana in aranas:

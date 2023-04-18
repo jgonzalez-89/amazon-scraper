@@ -1,5 +1,4 @@
 venv
 data.txt
 .env
-#### Ignore date folders (format: YYYY-MM-DD) ####
-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
+
