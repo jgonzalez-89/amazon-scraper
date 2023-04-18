@@ -1,14 +1,29 @@
--------------------------- Lanzar Scripts -----------------------------
-Puedes lanzar el script individualmente ubicandote en la carpeta products y ejecutando:
+## Instalacion
+
+1. Crear entorno virtual
+   `python -m venv venv`
+
+   - Activar el entorno virtual
+   - Instalar las dependencias del archivo requirements.txt
+
+   ` pip install -r requirements.txt`
+
+   - Ejecutar el archivo launcher.py
+
+   `python launcher.py`
+
+## Lanzar Scripts
+
+1. Puedes lanzar el script individualmente ubicandote en la carpeta products y ejecutando:
 
 `scrapy crawl ohpeluqueros -o test_ohpeluqueros.json`
 
-O puedes lanzar todas las arañas a la ves ejecutando ` python launcher.py` desde la ubicacion del archivo launcher.py
+## Iniciar migracion de la base de datos :
 
-Iniciar migracion de la base de datos :
 `alembic revision --autogenerate -m "Initial migration"`
 
-Aplicar la migracion a la base de datos :
+## Aplicar la migracion a la base de datos :
+
 `alembic upgrade head`
 
 Cada vez que realices cambios en tu archivo `models.py` que afecten la estructura de la base de datos, deberás seguir estos pasos:
@@ -19,7 +34,7 @@ Aplicar la migración a la base de datos:
 
 `alembic upgrade head`
 
----------------------------- PostgreSQL ----------------------------
+# PostgreSQL
 
 1. Descargarlo desde el sitio web oficial de PostgreSQL: https://www.postgresql.org/download/
 
