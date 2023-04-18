@@ -20,5 +20,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar el código del proyecto al contenedor
 COPY . .
 
-# Ejecutar el spider
+# Ejecutar el script 
 CMD ["python", "launcher.py"]

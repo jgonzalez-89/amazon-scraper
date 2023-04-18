@@ -8,13 +8,10 @@ from products.spiders.models import Producto, engine
 
 Session = sessionmaker(bind=engine)
 
-# comando para ejecutar el scraper : scrapy crawl amazon -o amazon.json
-
 
 ############################################################### OHPELUQUEROS ###############################################################
 
-
-# v1.1
+# v2.0
 class OhPeluquerosSpider(scrapy.Spider):
     name = "ohpeluqueros"
     start_urls = ["https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680165461&ref=sr_pg_1"]
@@ -24,57 +21,27 @@ class OhPeluquerosSpider(scrapy.Spider):
         products = response.xpath("//div[contains(@class, 's-result-item')]")
 
         for idx, product in enumerate(products):
-            product_url = product.xpath(".//h2/a/@href").get()
-
-            # Capturar el precio del producto aquí
-            precio_str = product.xpath(
-                ".//span[contains(@class, 'a-price-whole')]/text()").get()
-            if precio_str is not None:
-                precio_str = precio_str.strip()
-                precio = float(precio_str.replace(',', '.'))
+            product_url = self.extract_product_url(product)
+            precio = self.extract_precio(product)
 
             if product_url:
                 yield response.follow(product_url, self.parse_product, cb_kwargs=dict(session=session, idx=idx, total_products=len(products), precio=precio))
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
-        siguiente_pagina = response.xpath(
-            "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+        siguiente_pagina = self.extract_next_page(response)
         if siguiente_pagina:
             yield response.follow(siguiente_pagina, self.parse)
 
     def parse_product(self, response, session, idx, total_products, precio):
         fecha = datetime.datetime.now().strftime("%d-%m-%Y")
-        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        nombre = self.extract_nombre(response)
+        numero_modelo = self.extract_numero_modelo(response)
 
         if nombre:
-            nombre = nombre.replace('"', '').lower().strip()
+            imagen = self.extract_imagen(response)
+            codigo = self.extract_codigo(response)
 
-            imagen = response.xpath("//*[@id='landingImage']/@src").get()
-
-            # Extraer todos los elementos <span> de la página
-            span_elements = response.xpath("//span/text()").getall()
-
-            # Definir la expresión regular para el formato de código deseado
-            codigo_regex = r"\b[A-Z0-9]{10}\b"
-
-            # Inicializar la variable 'codigo' en None
-            codigo = None
-
-            # Iterar sobre los elementos <span> y buscar el código que coincida con el formato
-            for element in span_elements:
-                match = re.search(codigo_regex, element)
-                if match:
-                    codigo = match.group(0)
-                    break
-
-            item = Producto(
-                fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
-                imagen=imagen,
-                nombre=nombre,
-                distribuidor="OhPeluqueros",
-                precio=precio,
-                ASIN=codigo,  # Asegúrate de agregar la columna 'codigo' a la clase Producto en tu archivo items.py
-            )
+            item = self.create_producto(
+                fecha, imagen, nombre, precio, codigo, numero_modelo)
 
             try:
                 session.add(item)
@@ -86,7 +53,8 @@ class OhPeluquerosSpider(scrapy.Spider):
                     "nombre": item.nombre,
                     "distribuidor": item.distribuidor,
                     "precio": item.precio,
-                    "ASIN": item.ASIN
+                    "ASIN": item.ASIN,
+                    "EAN": item.EAN
                 }
 
             except Exception as e:
@@ -94,14 +62,179 @@ class OhPeluquerosSpider(scrapy.Spider):
                     f"Error al insertar el item en la base de datos: {e}")
                 session.rollback()
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
         if idx + 1 == total_products:
-            siguiente_pagina = response.xpath(
-                "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+            siguiente_pagina = self.extract_next_page(response)
             if siguiente_pagina:
                 yield response.follow(siguiente_pagina, self.parse)
 
         session.close()
+
+    @staticmethod
+    def extract_product_url(product):
+        return product.xpath(".//h2/a/@href").get()
+
+    @staticmethod
+    def extract_precio(product):
+        precio_str = product.xpath(
+            ".//span[contains(@class, 'a-price-whole')]/text()").get()
+        if precio_str is not None:
+            precio_str = precio_str.strip()
+            return float(precio_str.replace(',', '.'))
+        return None
+
+    @staticmethod
+    def extract_next_page(response):
+        return response.xpath("//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_numero_modelo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        numero_modelo_regex = r"\b\d{13}\b"
+        for element in span_elements:
+            match = re.search(numero_modelo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def extract_imagen(response):
+        return response.xpath("//*[@id='landingImage']/@src").get()
+
+    @staticmethod
+    def extract_codigo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        codigo_regex = r"\b[A-Z0-9]{10}\b"
+        for element in span_elements:
+            match = re.search(codigo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def create_producto(fecha, imagen, nombre, precio, codigo, numero_modelo):
+        return Producto(
+            fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
+            imagen=imagen,
+            nombre=nombre,
+            distribuidor="OhPeluqueros",
+            precio=precio,
+            ASIN=codigo,
+            EAN=numero_modelo,
+        )
+
+
+# v1.1
+# class OhPeluquerosSpider(scrapy.Spider):
+#     name = "ohpeluqueros"
+#     start_urls = ["https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680165461&ref=sr_pg_1"]
+
+#     def parse(self, response):
+#         session = Session()
+#         products = response.xpath("//div[contains(@class, 's-result-item')]")
+
+#         for idx, product in enumerate(products):
+#             product_url = product.xpath(".//h2/a/@href").get()
+
+#             # Capturar el precio del producto aquí
+#             precio_str = product.xpath(".//span[contains(@class, 'a-price-whole')]/text()").get()
+#             if precio_str is not None:
+#                 precio_str = precio_str.strip()
+#                 precio = float(precio_str.replace(',', '.'))
+
+#             if product_url:
+#                 yield response.follow(product_url, self.parse_product, cb_kwargs=dict(session=session, idx=idx, total_products=len(products), precio=precio))
+
+#         # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
+#         siguiente_pagina = response.xpath("//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+#         if siguiente_pagina:
+#             yield response.follow(siguiente_pagina, self.parse)
+
+#     def parse_product(self, response, session, idx, total_products, precio):
+#         fecha = datetime.datetime.now().strftime("%d-%m-%Y")
+#         nombre = response.xpath("//*[@id='productTitle']/text()").get()
+#         span_elements = response.xpath("//span/text()").getall()
+#         numero_modelo_regex = r"\b\d{13}\b"
+#         numero_modelo = None
+#         for element in span_elements:
+#             match = re.search(numero_modelo_regex, element)
+#             if match:
+#                 numero_modelo = match.group(0)
+#                 break
+#         # # numero_modelo = response.xpath('//*[@id="detailBullets_feature_div"]/ul/li[7]/span/span[2]/text()').get()
+#         # if numero_modelo:
+#         #     numero_modelo = numero_modelo.strip()
+
+#         if nombre:
+#             nombre = nombre.replace('"', '').lower().strip()
+
+#             imagen = response.xpath("//*[@id='landingImage']/@src").get()
+
+#             # Extraer todos los elementos <span> de la página
+#             span_elements = response.xpath("//span/text()").getall()
+
+#             # Definir la expresión regular para el formato de código deseado
+#             codigo_regex = r"\b[A-Z0-9]{10}\b"
+
+#             # Inicializar la variable 'codigo' en None
+#             codigo = None
+
+#             # Iterar sobre los elementos <span> y buscar el código que coincida con el formato
+#             for element in span_elements:
+#                 match = re.search(codigo_regex, element)
+#                 if match:
+#                     codigo = match.group(0)
+#                     break
+
+#             item = Producto(
+#                 fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
+#                 imagen=imagen,
+#                 nombre=nombre,
+#                 distribuidor="OhPeluqueros",
+#                 precio=precio,
+#                 ASIN=codigo,
+#                 EAN=numero_modelo,
+#             )
+
+#             try:
+#                 session.add(item)
+#                 session.commit()
+
+#                 yield {
+#                     "fecha": fecha,
+#                     "imagen": item.imagen,
+#                     "nombre": item.nombre,
+#                     "distribuidor": item.distribuidor,
+#                     "precio": item.precio,
+#                     "ASIN": item.ASIN,
+#                     "EAN": item.EAN
+#                 }
+
+#             except Exception as e:
+#                 self.logger.error(
+#                     f"Error al insertar el item en la base de datos: {e}")
+#                 session.rollback()
+
+#         # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
+#         if idx + 1 == total_products:
+#             siguiente_pagina = response.xpath("//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+#             if siguiente_pagina:
+#                 yield response.follow(siguiente_pagina, self.parse)
+
+#         session.close()
 
 # v.1.0
 # class OhPeluquerosSpider(scrapy.Spider):
@@ -169,56 +302,27 @@ class PyCProfesionalSpider(scrapy.Spider):
         products = response.xpath("//div[contains(@class, 's-result-item')]")
 
         for idx, product in enumerate(products):
-            product_url = product.xpath(".//h2/a/@href").get()
-
-            # Capturar el precio del producto aquí
-            precio_str = product.xpath(
-                ".//span[contains(@class, 'a-price-whole')]/text()").get()
-            if precio_str is not None:
-                precio_str = precio_str.strip()
-                precio = float(precio_str.replace(',', '.'))
+            product_url = self.extract_product_url(product)
+            precio = self.extract_precio(product)
 
             if product_url:
                 yield response.follow(product_url, self.parse_product, cb_kwargs=dict(session=session, idx=idx, total_products=len(products), precio=precio))
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
-        siguiente_pagina = response.xpath(
-            "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+        siguiente_pagina = self.extract_next_page(response)
         if siguiente_pagina:
             yield response.follow(siguiente_pagina, self.parse)
 
     def parse_product(self, response, session, idx, total_products, precio):
         fecha = datetime.datetime.now().strftime("%d-%m-%Y")
-        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        nombre = self.extract_nombre(response)
+        numero_modelo = self.extract_numero_modelo(response)
 
         if nombre:
-            nombre = nombre.replace('"', '').lower().strip()
-            imagen = response.xpath("//*[@id='landingImage']/@src").get()
+            imagen = self.extract_imagen(response)
+            codigo = self.extract_codigo(response)
 
-            # Extraer todos los elementos <span> de la página
-            span_elements = response.xpath("//span/text()").getall()
-
-            # Definir la expresión regular para el formato de código deseado
-            codigo_regex = r"\b[A-Z0-9]{10}\b"
-
-            # Inicializar la variable 'codigo' en None
-            codigo = None
-
-            # Iterar sobre los elementos <span> y buscar el código que coincida con el formato
-            for element in span_elements:
-                match = re.search(codigo_regex, element)
-                if match:
-                    codigo = match.group(0)
-                    break
-
-            item = Producto(
-                fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
-                imagen=imagen,
-                nombre=nombre,
-                distribuidor="P&CProfesional",
-                precio=precio,
-                ASIN=codigo,
-            )
+            item = self.create_producto(
+                fecha, imagen, nombre, precio, codigo, numero_modelo)
 
             try:
                 session.add(item)
@@ -230,7 +334,8 @@ class PyCProfesionalSpider(scrapy.Spider):
                     "nombre": item.nombre,
                     "distribuidor": item.distribuidor,
                     "precio": item.precio,
-                    "ASIN": item.ASIN
+                    "ASIN": item.ASIN,
+                    "EAN": item.EAN
                 }
 
             except Exception as e:
@@ -238,14 +343,79 @@ class PyCProfesionalSpider(scrapy.Spider):
                     f"Error al insertar el item en la base de datos: {e}")
                 session.rollback()
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
         if idx + 1 == total_products:
-            siguiente_pagina = response.xpath(
-                "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+            siguiente_pagina = self.extract_next_page(response)
             if siguiente_pagina:
                 yield response.follow(siguiente_pagina, self.parse)
 
         session.close()
+
+    @staticmethod
+    def extract_product_url(product):
+        return product.xpath(".//h2/a/@href").get()
+
+    @staticmethod
+    def extract_precio(product):
+        precio_str = product.xpath(
+            ".//span[contains(@class, 'a-price-whole')]/text()").get()
+        if precio_str is not None:
+            precio_str = precio_str.strip()
+            return float(precio_str.replace(',', '.'))
+        return None
+
+    @staticmethod
+    def extract_next_page(response):
+        return response.xpath("//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_numero_modelo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        numero_modelo_regex = r"\b\d{13}\b"
+        for element in span_elements:
+            match = re.search(numero_modelo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def extract_imagen(response):
+        return response.xpath("//*[@id='landingImage']/@src").get()
+
+    @staticmethod
+    def extract_codigo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        codigo_regex = r"\b[A-Z0-9]{10}\b"
+        for element in span_elements:
+            match = re.search(codigo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def create_producto(fecha, imagen, nombre, precio, codigo, numero_modelo):
+        return Producto(
+            fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
+            imagen=imagen,
+            nombre=nombre,
+            distribuidor="P&CProfesional",
+            precio=precio,
+            ASIN=codigo,
+            EAN=numero_modelo,
+        )
 
 
 ############################################################### Good Care Cosmetics ###############################################################
@@ -260,57 +430,27 @@ class GoodCareCosmeticsSpider(scrapy.Spider):
         products = response.xpath("//div[contains(@class, 's-result-item')]")
 
         for idx, product in enumerate(products):
-            product_url = product.xpath(".//h2/a/@href").get()
-
-            # Capturar el precio del producto aquí
-            precio_str = product.xpath(
-                ".//span[contains(@class, 'a-price-whole')]/text()").get()
-            if precio_str is not None:
-                precio_str = precio_str.strip()
-                precio = float(precio_str.replace(',', '.'))
+            product_url = self.extract_product_url(product)
+            precio = self.extract_precio(product)
 
             if product_url:
                 yield response.follow(product_url, self.parse_product, cb_kwargs=dict(session=session, idx=idx, total_products=len(products), precio=precio))
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
-        siguiente_pagina = response.xpath(
-            "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+        siguiente_pagina = self.extract_next_page(response)
         if siguiente_pagina:
             yield response.follow(siguiente_pagina, self.parse)
 
     def parse_product(self, response, session, idx, total_products, precio):
         fecha = datetime.datetime.now().strftime("%d-%m-%Y")
-        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        nombre = self.extract_nombre(response)
+        numero_modelo = self.extract_numero_modelo(response)
 
         if nombre:
-            nombre = nombre.replace('"', '').lower().strip()
+            imagen = self.extract_imagen(response)
+            codigo = self.extract_codigo(response)
 
-            imagen = response.xpath("//*[@id='landingImage']/@src").get()
-
-            # Extraer todos los elementos <span> de la página
-            span_elements = response.xpath("//span/text()").getall()
-
-            # Definir la expresión regular para el formato de código deseado
-            codigo_regex = r"\b[A-Z0-9]{10}\b"
-
-            # Inicializar la variable 'codigo' en None
-            codigo = None
-
-            # Iterar sobre los elementos <span> y buscar el código que coincida con el formato
-            for element in span_elements:
-                match = re.search(codigo_regex, element)
-                if match:
-                    codigo = match.group(0)
-                    break
-
-            item = Producto(
-                fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
-                imagen=imagen,
-                nombre=nombre,
-                distribuidor="GoodCareCosmetics",
-                precio=precio,
-                ASIN=codigo,
-            )
+            item = self.create_producto(
+                fecha, imagen, nombre, precio, codigo, numero_modelo)
 
             try:
                 session.add(item)
@@ -322,7 +462,8 @@ class GoodCareCosmeticsSpider(scrapy.Spider):
                     "nombre": item.nombre,
                     "distribuidor": item.distribuidor,
                     "precio": item.precio,
-                    "ASIN": item.ASIN
+                    "ASIN": item.ASIN,
+                    "EAN": item.EAN
                 }
 
             except Exception as e:
@@ -330,14 +471,80 @@ class GoodCareCosmeticsSpider(scrapy.Spider):
                     f"Error al insertar el item en la base de datos: {e}")
                 session.rollback()
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
         if idx + 1 == total_products:
-            siguiente_pagina = response.xpath(
-                "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+            siguiente_pagina = self.extract_next_page(response)
             if siguiente_pagina:
                 yield response.follow(siguiente_pagina, self.parse)
 
         session.close()
+
+    @staticmethod
+    def extract_product_url(product):
+        return product.xpath(".//h2/a/@href").get()
+
+    @staticmethod
+    def extract_precio(product):
+        precio_str = product.xpath(
+            ".//span[contains(@class, 'a-price-whole')]/text()").get()
+        if precio_str is not None:
+            precio_str = precio_str.strip()
+            return float(precio_str.replace(',', '.'))
+        return None
+
+    @staticmethod
+    def extract_next_page(response):
+        return response.xpath("//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_numero_modelo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        numero_modelo_regex = r"\b\d{13}\b"
+        for element in span_elements:
+            match = re.search(numero_modelo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def extract_imagen(response):
+        return response.xpath("//*[@id='landingImage']/@src").get()
+
+    @staticmethod
+    def extract_codigo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        codigo_regex = r"\b[A-Z0-9]{10}\b"
+        for element in span_elements:
+            match = re.search(codigo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def create_producto(fecha, imagen, nombre, precio, codigo, numero_modelo):
+        return Producto(
+            fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
+            imagen=imagen,
+            nombre=nombre,
+            distribuidor="GoodCareCosmetics",
+            precio=precio,
+            ASIN=codigo,
+            EAN=numero_modelo,
+        )
+
 
 ############################################################### Levanitashop ###############################################################
 
@@ -352,57 +559,27 @@ class LevanitaShopSpider(scrapy.Spider):
         products = response.xpath("//div[contains(@class, 's-result-item')]")
 
         for idx, product in enumerate(products):
-            product_url = product.xpath(".//h2/a/@href").get()
-
-            # Capturar el precio del producto aquí
-            precio_str = product.xpath(
-                ".//span[contains(@class, 'a-price-whole')]/text()").get()
-            if precio_str is not None:
-                precio_str = precio_str.strip()
-                precio = float(precio_str.replace(',', '.'))
+            product_url = self.extract_product_url(product)
+            precio = self.extract_precio(product)
 
             if product_url:
                 yield response.follow(product_url, self.parse_product, cb_kwargs=dict(session=session, idx=idx, total_products=len(products), precio=precio))
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
-        siguiente_pagina = response.xpath(
-            "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+        siguiente_pagina = self.extract_next_page(response)
         if siguiente_pagina:
             yield response.follow(siguiente_pagina, self.parse)
 
     def parse_product(self, response, session, idx, total_products, precio):
         fecha = datetime.datetime.now().strftime("%d-%m-%Y")
-        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        nombre = self.extract_nombre(response)
+        numero_modelo = self.extract_numero_modelo(response)
 
         if nombre:
-            nombre = nombre.replace('"', '').lower().strip()
+            imagen = self.extract_imagen(response)
+            codigo = self.extract_codigo(response)
 
-            imagen = response.xpath("//*[@id='landingImage']/@src").get()
-
-            # Extraer todos los elementos <span> de la página
-            span_elements = response.xpath("//span/text()").getall()
-
-            # Definir la expresión regular para el formato de código deseado
-            codigo_regex = r"\b[A-Z0-9]{10}\b"
-
-            # Inicializar la variable 'codigo' en None
-            codigo = None
-
-            # Iterar sobre los elementos <span> y buscar el código que coincida con el formato
-            for element in span_elements:
-                match = re.search(codigo_regex, element)
-                if match:
-                    codigo = match.group(0)
-                    break
-
-            item = Producto(
-                fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
-                imagen=imagen,
-                nombre=nombre,
-                distribuidor="LevitaShop",
-                precio=precio,
-                ASIN=codigo,
-            )
+            item = self.create_producto(
+                fecha, imagen, nombre, precio, codigo, numero_modelo)
 
             try:
                 session.add(item)
@@ -414,7 +591,8 @@ class LevanitaShopSpider(scrapy.Spider):
                     "nombre": item.nombre,
                     "distribuidor": item.distribuidor,
                     "precio": item.precio,
-                    "ASIN": item.ASIN
+                    "ASIN": item.ASIN,
+                    "EAN": item.EAN
                 }
 
             except Exception as e:
@@ -422,14 +600,79 @@ class LevanitaShopSpider(scrapy.Spider):
                     f"Error al insertar el item en la base de datos: {e}")
                 session.rollback()
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
         if idx + 1 == total_products:
-            siguiente_pagina = response.xpath(
-                "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+            siguiente_pagina = self.extract_next_page(response)
             if siguiente_pagina:
                 yield response.follow(siguiente_pagina, self.parse)
 
         session.close()
+
+    @staticmethod
+    def extract_product_url(product):
+        return product.xpath(".//h2/a/@href").get()
+
+    @staticmethod
+    def extract_precio(product):
+        precio_str = product.xpath(
+            ".//span[contains(@class, 'a-price-whole')]/text()").get()
+        if precio_str is not None:
+            precio_str = precio_str.strip()
+            return float(precio_str.replace(',', '.'))
+        return None
+
+    @staticmethod
+    def extract_next_page(response):
+        return response.xpath("//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_numero_modelo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        numero_modelo_regex = r"\b\d{13}\b"
+        for element in span_elements:
+            match = re.search(numero_modelo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def extract_imagen(response):
+        return response.xpath("//*[@id='landingImage']/@src").get()
+
+    @staticmethod
+    def extract_codigo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        codigo_regex = r"\b[A-Z0-9]{10}\b"
+        for element in span_elements:
+            match = re.search(codigo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def create_producto(fecha, imagen, nombre, precio, codigo, numero_modelo):
+        return Producto(
+            fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
+            imagen=imagen,
+            nombre=nombre,
+            distribuidor="LevitaShop",
+            precio=precio,
+            ASIN=codigo,
+            EAN=numero_modelo,
+        )
 
 
 ############################################################### Lui & Lei BEAUTY ###############################################################
@@ -445,57 +688,27 @@ class LuiyLeiBeautySpider(scrapy.Spider):
         products = response.xpath("//div[contains(@class, 's-result-item')]")
 
         for idx, product in enumerate(products):
-            product_url = product.xpath(".//h2/a/@href").get()
-
-            # Capturar el precio del producto aquí
-            precio_str = product.xpath(
-                ".//span[contains(@class, 'a-price-whole')]/text()").get()
-            if precio_str is not None:
-                precio_str = precio_str.strip()
-                precio = float(precio_str.replace(',', '.'))
+            product_url = self.extract_product_url(product)
+            precio = self.extract_precio(product)
 
             if product_url:
                 yield response.follow(product_url, self.parse_product, cb_kwargs=dict(session=session, idx=idx, total_products=len(products), precio=precio))
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
-        siguiente_pagina = response.xpath(
-            "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+        siguiente_pagina = self.extract_next_page(response)
         if siguiente_pagina:
             yield response.follow(siguiente_pagina, self.parse)
 
     def parse_product(self, response, session, idx, total_products, precio):
         fecha = datetime.datetime.now().strftime("%d-%m-%Y")
-        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        nombre = self.extract_nombre(response)
+        numero_modelo = self.extract_numero_modelo(response)
 
         if nombre:
-            nombre = nombre.replace('"', '').lower().strip()
+            imagen = self.extract_imagen(response)
+            codigo = self.extract_codigo(response)
 
-            imagen = response.xpath("//*[@id='landingImage']/@src").get()
-
-            # Extraer todos los elementos <span> de la página
-            span_elements = response.xpath("//span/text()").getall()
-
-            # Definir la expresión regular para el formato de código deseado
-            codigo_regex = r"\b[A-Z0-9]{10}\b"
-
-            # Inicializar la variable 'codigo' en None
-            codigo = None
-
-            # Iterar sobre los elementos <span> y buscar el código que coincida con el formato
-            for element in span_elements:
-                match = re.search(codigo_regex, element)
-                if match:
-                    codigo = match.group(0)
-                    break
-
-            item = Producto(
-                fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
-                imagen=imagen,
-                nombre=nombre,
-                distribuidor="Lui&LeiBeauty",
-                precio=precio,
-                ASIN=codigo, 
-            )
+            item = self.create_producto(
+                fecha, imagen, nombre, precio, codigo, numero_modelo)
 
             try:
                 session.add(item)
@@ -507,7 +720,8 @@ class LuiyLeiBeautySpider(scrapy.Spider):
                     "nombre": item.nombre,
                     "distribuidor": item.distribuidor,
                     "precio": item.precio,
-                    "ASIN": item.ASIN
+                    "ASIN": item.ASIN,
+                    "EAN": item.EAN
                 }
 
             except Exception as e:
@@ -515,14 +729,79 @@ class LuiyLeiBeautySpider(scrapy.Spider):
                     f"Error al insertar el item en la base de datos: {e}")
                 session.rollback()
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
         if idx + 1 == total_products:
-            siguiente_pagina = response.xpath(
-                "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+            siguiente_pagina = self.extract_next_page(response)
             if siguiente_pagina:
                 yield response.follow(siguiente_pagina, self.parse)
 
         session.close()
+
+    @staticmethod
+    def extract_product_url(product):
+        return product.xpath(".//h2/a/@href").get()
+
+    @staticmethod
+    def extract_precio(product):
+        precio_str = product.xpath(
+            ".//span[contains(@class, 'a-price-whole')]/text()").get()
+        if precio_str is not None:
+            precio_str = precio_str.strip()
+            return float(precio_str.replace(',', '.'))
+        return None
+
+    @staticmethod
+    def extract_next_page(response):
+        return response.xpath("//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_numero_modelo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        numero_modelo_regex = r"\b\d{13}\b"
+        for element in span_elements:
+            match = re.search(numero_modelo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def extract_imagen(response):
+        return response.xpath("//*[@id='landingImage']/@src").get()
+
+    @staticmethod
+    def extract_codigo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        codigo_regex = r"\b[A-Z0-9]{10}\b"
+        for element in span_elements:
+            match = re.search(codigo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def create_producto(fecha, imagen, nombre, precio, codigo, numero_modelo):
+        return Producto(
+            fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
+            imagen=imagen,
+            nombre=nombre,
+            distribuidor="Lui&LeiBeauty",
+            precio=precio,
+            ASIN=codigo,
+            EAN=numero_modelo,
+        )
 
 
 ############################################################### DUDE beauty shop ###############################################################
@@ -537,57 +816,27 @@ class DudeBeautySpider(scrapy.Spider):
         products = response.xpath("//div[contains(@class, 's-result-item')]")
 
         for idx, product in enumerate(products):
-            product_url = product.xpath(".//h2/a/@href").get()
-
-            # Capturar el precio del producto aquí
-            precio_str = product.xpath(
-                ".//span[contains(@class, 'a-price-whole')]/text()").get()
-            if precio_str is not None:
-                precio_str = precio_str.strip()
-                precio = float(precio_str.replace(',', '.'))
+            product_url = self.extract_product_url(product)
+            precio = self.extract_precio(product)
 
             if product_url:
                 yield response.follow(product_url, self.parse_product, cb_kwargs=dict(session=session, idx=idx, total_products=len(products), precio=precio))
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
-        siguiente_pagina = response.xpath(
-            "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+        siguiente_pagina = self.extract_next_page(response)
         if siguiente_pagina:
             yield response.follow(siguiente_pagina, self.parse)
 
     def parse_product(self, response, session, idx, total_products, precio):
         fecha = datetime.datetime.now().strftime("%d-%m-%Y")
-        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        nombre = self.extract_nombre(response)
+        numero_modelo = self.extract_numero_modelo(response)
 
         if nombre:
-            nombre = nombre.replace('"', '').lower().strip()
+            imagen = self.extract_imagen(response)
+            codigo = self.extract_codigo(response)
 
-            imagen = response.xpath("//*[@id='landingImage']/@src").get()
-
-            # Extraer todos los elementos <span> de la página
-            span_elements = response.xpath("//span/text()").getall()
-
-            # Definir la expresión regular para el formato de código deseado
-            codigo_regex = r"\b[A-Z0-9]{10}\b"
-
-            # Inicializar la variable 'codigo' en None
-            codigo = None
-
-            # Iterar sobre los elementos <span> y buscar el código que coincida con el formato
-            for element in span_elements:
-                match = re.search(codigo_regex, element)
-                if match:
-                    codigo = match.group(0)
-                    break
-
-            item = Producto(
-                fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
-                imagen=imagen,
-                nombre=nombre,
-                distribuidor="DudeBeauty",
-                precio=precio,
-                ASIN=codigo, 
-            )
+            item = self.create_producto(
+                fecha, imagen, nombre, precio, codigo, numero_modelo)
 
             try:
                 session.add(item)
@@ -599,7 +848,8 @@ class DudeBeautySpider(scrapy.Spider):
                     "nombre": item.nombre,
                     "distribuidor": item.distribuidor,
                     "precio": item.precio,
-                    "ASIN": item.ASIN
+                    "ASIN": item.ASIN,
+                    "EAN": item.EAN
                 }
 
             except Exception as e:
@@ -607,14 +857,80 @@ class DudeBeautySpider(scrapy.Spider):
                     f"Error al insertar el item en la base de datos: {e}")
                 session.rollback()
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
         if idx + 1 == total_products:
-            siguiente_pagina = response.xpath(
-                "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+            siguiente_pagina = self.extract_next_page(response)
             if siguiente_pagina:
                 yield response.follow(siguiente_pagina, self.parse)
 
         session.close()
+
+    @staticmethod
+    def extract_product_url(product):
+        return product.xpath(".//h2/a/@href").get()
+
+    @staticmethod
+    def extract_precio(product):
+        precio_str = product.xpath(
+            ".//span[contains(@class, 'a-price-whole')]/text()").get()
+        if precio_str is not None:
+            precio_str = precio_str.strip()
+            return float(precio_str.replace(',', '.'))
+        return None
+
+    @staticmethod
+    def extract_next_page(response):
+        return response.xpath("//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_numero_modelo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        numero_modelo_regex = r"\b\d{13}\b"
+        for element in span_elements:
+            match = re.search(numero_modelo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def extract_imagen(response):
+        return response.xpath("//*[@id='landingImage']/@src").get()
+
+    @staticmethod
+    def extract_codigo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        codigo_regex = r"\b[A-Z0-9]{10}\b"
+        for element in span_elements:
+            match = re.search(codigo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def create_producto(fecha, imagen, nombre, precio, codigo, numero_modelo):
+        return Producto(
+            fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
+            imagen=imagen,
+            nombre=nombre,
+            distribuidor="DudeBeauty",
+            precio=precio,
+            ASIN=codigo,
+            EAN=numero_modelo,
+        )
+
 
 ############################################################### Kapylook S.L. ###############################################################
 
@@ -628,57 +944,27 @@ class KapylookSpider(scrapy.Spider):
         products = response.xpath("//div[contains(@class, 's-result-item')]")
 
         for idx, product in enumerate(products):
-            product_url = product.xpath(".//h2/a/@href").get()
-
-            # Capturar el precio del producto aquí
-            precio_str = product.xpath(
-                ".//span[contains(@class, 'a-price-whole')]/text()").get()
-            if precio_str is not None:
-                precio_str = precio_str.strip()
-                precio = float(precio_str.replace(',', '.'))
+            product_url = self.extract_product_url(product)
+            precio = self.extract_precio(product)
 
             if product_url:
                 yield response.follow(product_url, self.parse_product, cb_kwargs=dict(session=session, idx=idx, total_products=len(products), precio=precio))
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
-        siguiente_pagina = response.xpath(
-            "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+        siguiente_pagina = self.extract_next_page(response)
         if siguiente_pagina:
             yield response.follow(siguiente_pagina, self.parse)
 
     def parse_product(self, response, session, idx, total_products, precio):
         fecha = datetime.datetime.now().strftime("%d-%m-%Y")
-        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        nombre = self.extract_nombre(response)
+        numero_modelo = self.extract_numero_modelo(response)
 
         if nombre:
-            nombre = nombre.replace('"', '').lower().strip()
+            imagen = self.extract_imagen(response)
+            codigo = self.extract_codigo(response)
 
-            imagen = response.xpath("//*[@id='landingImage']/@src").get()
-
-            # Extraer todos los elementos <span> de la página
-            span_elements = response.xpath("//span/text()").getall()
-
-            # Definir la expresión regular para el formato de código deseado
-            codigo_regex = r"\b[A-Z0-9]{10}\b"
-
-            # Inicializar la variable 'codigo' en None
-            codigo = None
-
-            # Iterar sobre los elementos <span> y buscar el código que coincida con el formato
-            for element in span_elements:
-                match = re.search(codigo_regex, element)
-                if match:
-                    codigo = match.group(0)
-                    break
-
-            item = Producto(
-                fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
-                imagen=imagen,
-                nombre=nombre,
-                distribuidor="KappyLook",
-                precio=precio,
-                ASIN=codigo, 
-            )
+            item = self.create_producto(
+                fecha, imagen, nombre, precio, codigo, numero_modelo)
 
             try:
                 session.add(item)
@@ -690,7 +976,8 @@ class KapylookSpider(scrapy.Spider):
                     "nombre": item.nombre,
                     "distribuidor": item.distribuidor,
                     "precio": item.precio,
-                    "ASIN": item.ASIN
+                    "ASIN": item.ASIN,
+                    "EAN": item.EAN
                 }
 
             except Exception as e:
@@ -698,14 +985,79 @@ class KapylookSpider(scrapy.Spider):
                     f"Error al insertar el item en la base de datos: {e}")
                 session.rollback()
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
         if idx + 1 == total_products:
-            siguiente_pagina = response.xpath(
-                "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+            siguiente_pagina = self.extract_next_page(response)
             if siguiente_pagina:
                 yield response.follow(siguiente_pagina, self.parse)
 
         session.close()
+
+    @staticmethod
+    def extract_product_url(product):
+        return product.xpath(".//h2/a/@href").get()
+
+    @staticmethod
+    def extract_precio(product):
+        precio_str = product.xpath(
+            ".//span[contains(@class, 'a-price-whole')]/text()").get()
+        if precio_str is not None:
+            precio_str = precio_str.strip()
+            return float(precio_str.replace(',', '.'))
+        return None
+
+    @staticmethod
+    def extract_next_page(response):
+        return response.xpath("//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_numero_modelo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        numero_modelo_regex = r"\b\d{13}\b"
+        for element in span_elements:
+            match = re.search(numero_modelo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def extract_imagen(response):
+        return response.xpath("//*[@id='landingImage']/@src").get()
+
+    @staticmethod
+    def extract_codigo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        codigo_regex = r"\b[A-Z0-9]{10}\b"
+        for element in span_elements:
+            match = re.search(codigo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def create_producto(fecha, imagen, nombre, precio, codigo, numero_modelo):
+        return Producto(
+            fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
+            imagen=imagen,
+            nombre=nombre,
+            distribuidor="KappyLook",
+            precio=precio,
+            ASIN=codigo,
+            EAN=numero_modelo,
+        )
 
 
 ############################################################### Hairllowers Amatupelo ###############################################################
@@ -721,57 +1073,27 @@ class HairLlowersSpider(scrapy.Spider):
         products = response.xpath("//div[contains(@class, 's-result-item')]")
 
         for idx, product in enumerate(products):
-            product_url = product.xpath(".//h2/a/@href").get()
-
-            # Capturar el precio del producto aquí
-            precio_str = product.xpath(
-                ".//span[contains(@class, 'a-price-whole')]/text()").get()
-            if precio_str is not None:
-                precio_str = precio_str.strip()
-                precio = float(precio_str.replace(',', '.'))
+            product_url = self.extract_product_url(product)
+            precio = self.extract_precio(product)
 
             if product_url:
                 yield response.follow(product_url, self.parse_product, cb_kwargs=dict(session=session, idx=idx, total_products=len(products), precio=precio))
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
-        siguiente_pagina = response.xpath(
-            "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+        siguiente_pagina = self.extract_next_page(response)
         if siguiente_pagina:
             yield response.follow(siguiente_pagina, self.parse)
 
     def parse_product(self, response, session, idx, total_products, precio):
         fecha = datetime.datetime.now().strftime("%d-%m-%Y")
-        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        nombre = self.extract_nombre(response)
+        numero_modelo = self.extract_numero_modelo(response)
 
         if nombre:
-            nombre = nombre.replace('"', '').lower().strip()
+            imagen = self.extract_imagen(response)
+            codigo = self.extract_codigo(response)
 
-            imagen = response.xpath("//*[@id='landingImage']/@src").get()
-
-            # Extraer todos los elementos <span> de la página
-            span_elements = response.xpath("//span/text()").getall()
-
-            # Definir la expresión regular para el formato de código deseado
-            codigo_regex = r"\b[A-Z0-9]{10}\b"
-
-            # Inicializar la variable 'codigo' en None
-            codigo = None
-
-            # Iterar sobre los elementos <span> y buscar el código que coincida con el formato
-            for element in span_elements:
-                match = re.search(codigo_regex, element)
-                if match:
-                    codigo = match.group(0)
-                    break
-
-            item = Producto(
-                fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
-                imagen=imagen,
-                nombre=nombre,
-                distribuidor="HairLowers",
-                precio=precio,
-                ASIN=codigo, 
-            )
+            item = self.create_producto(
+                fecha, imagen, nombre, precio, codigo, numero_modelo)
 
             try:
                 session.add(item)
@@ -783,7 +1105,8 @@ class HairLlowersSpider(scrapy.Spider):
                     "nombre": item.nombre,
                     "distribuidor": item.distribuidor,
                     "precio": item.precio,
-                    "ASIN": item.ASIN
+                    "ASIN": item.ASIN,
+                    "EAN": item.EAN
                 }
 
             except Exception as e:
@@ -791,14 +1114,79 @@ class HairLlowersSpider(scrapy.Spider):
                     f"Error al insertar el item en la base de datos: {e}")
                 session.rollback()
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
         if idx + 1 == total_products:
-            siguiente_pagina = response.xpath(
-                "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+            siguiente_pagina = self.extract_next_page(response)
             if siguiente_pagina:
                 yield response.follow(siguiente_pagina, self.parse)
 
         session.close()
+
+    @staticmethod
+    def extract_product_url(product):
+        return product.xpath(".//h2/a/@href").get()
+
+    @staticmethod
+    def extract_precio(product):
+        precio_str = product.xpath(
+            ".//span[contains(@class, 'a-price-whole')]/text()").get()
+        if precio_str is not None:
+            precio_str = precio_str.strip()
+            return float(precio_str.replace(',', '.'))
+        return None
+
+    @staticmethod
+    def extract_next_page(response):
+        return response.xpath("//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_numero_modelo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        numero_modelo_regex = r"\b\d{13}\b"
+        for element in span_elements:
+            match = re.search(numero_modelo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def extract_imagen(response):
+        return response.xpath("//*[@id='landingImage']/@src").get()
+
+    @staticmethod
+    def extract_codigo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        codigo_regex = r"\b[A-Z0-9]{10}\b"
+        for element in span_elements:
+            match = re.search(codigo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def create_producto(fecha, imagen, nombre, precio, codigo, numero_modelo):
+        return Producto(
+            fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
+            imagen=imagen,
+            nombre=nombre,
+            distribuidor="HairLowers",
+            precio=precio,
+            ASIN=codigo,
+            EAN=numero_modelo,
+        )
 
 
 ############################################################### CORRADO EQUIPE PARRUCCHIERI ###############################################################
@@ -814,57 +1202,27 @@ class CorradoEquipeSpider(scrapy.Spider):
         products = response.xpath("//div[contains(@class, 's-result-item')]")
 
         for idx, product in enumerate(products):
-            product_url = product.xpath(".//h2/a/@href").get()
-
-            # Capturar el precio del producto aquí
-            precio_str = product.xpath(
-                ".//span[contains(@class, 'a-price-whole')]/text()").get()
-            if precio_str is not None:
-                precio_str = precio_str.strip()
-                precio = float(precio_str.replace(',', '.'))
+            product_url = self.extract_product_url(product)
+            precio = self.extract_precio(product)
 
             if product_url:
                 yield response.follow(product_url, self.parse_product, cb_kwargs=dict(session=session, idx=idx, total_products=len(products), precio=precio))
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
-        siguiente_pagina = response.xpath(
-            "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+        siguiente_pagina = self.extract_next_page(response)
         if siguiente_pagina:
             yield response.follow(siguiente_pagina, self.parse)
 
     def parse_product(self, response, session, idx, total_products, precio):
         fecha = datetime.datetime.now().strftime("%d-%m-%Y")
-        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        nombre = self.extract_nombre(response)
+        numero_modelo = self.extract_numero_modelo(response)
 
         if nombre:
-            nombre = nombre.replace('"', '').lower().strip()
+            imagen = self.extract_imagen(response)
+            codigo = self.extract_codigo(response)
 
-            imagen = response.xpath("//*[@id='landingImage']/@src").get()
-
-            # Extraer todos los elementos <span> de la página
-            span_elements = response.xpath("//span/text()").getall()
-
-            # Definir la expresión regular para el formato de código deseado
-            codigo_regex = r"\b[A-Z0-9]{10}\b"
-
-            # Inicializar la variable 'codigo' en None
-            codigo = None
-
-            # Iterar sobre los elementos <span> y buscar el código que coincida con el formato
-            for element in span_elements:
-                match = re.search(codigo_regex, element)
-                if match:
-                    codigo = match.group(0)
-                    break
-
-            item = Producto(
-                fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
-                imagen=imagen,
-                nombre=nombre,
-                distribuidor="CorradoEquipe",
-                precio=precio,
-                ASIN=codigo,  # Asegúrate de agregar la columna 'codigo' a la clase Producto en tu archivo items.py
-            )
+            item = self.create_producto(
+                fecha, imagen, nombre, precio, codigo, numero_modelo)
 
             try:
                 session.add(item)
@@ -876,7 +1234,8 @@ class CorradoEquipeSpider(scrapy.Spider):
                     "nombre": item.nombre,
                     "distribuidor": item.distribuidor,
                     "precio": item.precio,
-                    "ASIN": item.ASIN
+                    "ASIN": item.ASIN,
+                    "EAN": item.EAN
                 }
 
             except Exception as e:
@@ -884,14 +1243,79 @@ class CorradoEquipeSpider(scrapy.Spider):
                     f"Error al insertar el item en la base de datos: {e}")
                 session.rollback()
 
-        # Cuando se procesa el último producto de la página actual, pasa a la siguiente página.
         if idx + 1 == total_products:
-            siguiente_pagina = response.xpath(
-                "//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+            siguiente_pagina = self.extract_next_page(response)
             if siguiente_pagina:
                 yield response.follow(siguiente_pagina, self.parse)
 
         session.close()
+
+    @staticmethod
+    def extract_product_url(product):
+        return product.xpath(".//h2/a/@href").get()
+
+    @staticmethod
+    def extract_precio(product):
+        precio_str = product.xpath(
+            ".//span[contains(@class, 'a-price-whole')]/text()").get()
+        if precio_str is not None:
+            precio_str = precio_str.strip()
+            return float(precio_str.replace(',', '.'))
+        return None
+
+    @staticmethod
+    def extract_next_page(response):
+        return response.xpath("//a[contains(@class, 's-pagination-next') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_numero_modelo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        numero_modelo_regex = r"\b\d{13}\b"
+        for element in span_elements:
+            match = re.search(numero_modelo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def extract_imagen(response):
+        return response.xpath("//*[@id='landingImage']/@src").get()
+
+    @staticmethod
+    def extract_codigo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        codigo_regex = r"\b[A-Z0-9]{10}\b"
+        for element in span_elements:
+            match = re.search(codigo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def create_producto(fecha, imagen, nombre, precio, codigo, numero_modelo):
+        return Producto(
+            fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
+            imagen=imagen,
+            nombre=nombre,
+            distribuidor="CorradoEquipe",
+            precio=precio,
+            ASIN=codigo,
+            EAN=numero_modelo,
+        )
 
 
 #

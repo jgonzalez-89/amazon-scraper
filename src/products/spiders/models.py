@@ -13,6 +13,7 @@ class Producto(Base):
     nombre = Column(String)
     distribuidor = Column(String)
     ASIN=Column(String)
+    EAN=Column(String)
     precio = Column(Float)
 
 # Reemplaza los siguientes valores con los de tu configuración de MySQL
