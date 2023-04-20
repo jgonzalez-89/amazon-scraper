@@ -6,12 +6,129 @@ import datetime
 from sqlalchemy.orm import sessionmaker
 from products.spiders.models import Producto, engine
 
+
 Session = sessionmaker(bind=engine)
 
+
+class DavinesSpider(scrapy.Spider):
+    name = "davines"
+    start_urls = [
+        "https://www.amazon.com/s?k=davines&crid=1HNM79Q9WQ8NT&qid=1682021135&sprefix=davine%2Caps%2C395&ref=sr_pg_1"]
+
+    def __init__(self, *args, **kwargs):
+        super(DavinesSpider, self).__init__(*args, **kwargs)
+        self.unique_asins = set()
+
+    def parse(self, response):
+        products = response.xpath("//div[contains(@class, 's-result-item')]")
+        product_requests = []  # Lista para almacenar las solicitudes de productos
+
+        for idx, product in enumerate(products):
+            product_url = self.extract_product_url(product)
+            precio = self.extract_precio(product)
+
+            if product_url:
+                req = response.follow(product_url, self.parse_product, cb_kwargs=dict(
+                    idx=idx, total_products=len(products), precio=precio))
+                product_requests.append(req)
+
+        yield from product_requests  # Procesa las solicitudes de productos en paralelo
+
+        siguiente_pagina = self.extract_next_page(response)
+        if siguiente_pagina:
+            yield response.follow(siguiente_pagina, self.parse)
+
+    def parse_product(self, response, idx, total_products, precio):
+        codigo = self.extract_codigo(response)
+
+        if codigo in self.unique_asins:
+            return  # Ignora el producto si el ASIN ya está en el conjunto
+
+        self.unique_asins.add(codigo)  # Agrega el ASIN al conjunto
+
+        fecha = datetime.datetime.now().strftime("%d-%m-%Y")
+        nombre = self.extract_nombre(response)
+        numero_modelo = self.extract_numero_modelo(response)
+
+        if nombre:
+            imagen = self.extract_imagen(response)
+            codigo = self.extract_codigo(response)
+
+            yield {
+                "fecha": fecha,
+                "imagen": imagen,
+                "nombre": nombre,
+                "distribuidor": "Davines",
+                "precio": precio,
+                "ASIN": codigo,
+                "EAN": numero_modelo
+            }
+
+    @staticmethod
+    def extract_product_url(product):
+        return product.xpath(".//h2/a/@href").get()
+
+    @staticmethod
+    def extract_precio(product):
+        precio_str = product.xpath(
+            ".//span[contains(@class, 'a-price-whole')]/text()").get()
+        if precio_str is not None:
+            precio_str = precio_str.strip()
+            return float(precio_str.replace(',', '.'))
+        return None
+
+    @staticmethod
+    def extract_next_page(response):
+        return response.xpath("//div[contains(@class, 's-pagination')]//a[contains(@class, 's-pagination-item') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+
+    @staticmethod
+    def extract_nombre(response):
+        nombre = response.xpath("//*[@id='productTitle']/text()").get()
+        if nombre:
+            return nombre.replace('"', '').lower().strip()
+        return None
+
+    @staticmethod
+    def extract_numero_modelo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        numero_modelo_regex = r"\b\d{13}\b"
+        for element in span_elements:
+            match = re.search(numero_modelo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def extract_imagen(response):
+        return response.xpath("//*[@id='landingImage']/@src").get()
+
+    @staticmethod
+    def extract_codigo(response):
+        span_elements = response.xpath("//span/text()").getall()
+        codigo_regex = r"\b[A-Z0-9]{10}\b"
+        for element in span_elements:
+            match = re.search(codigo_regex, element)
+            if match:
+                return match.group(0)
+        return None
+
+    @staticmethod
+    def create_producto(fecha, imagen, nombre, precio, codigo, numero_modelo):
+        return Producto(
+            fecha=datetime.datetime.strptime(fecha, "%d-%m-%Y").date(),
+            imagen=imagen,
+            nombre=nombre,
+            distribuidor="Davines",
+            precio=precio,
+            ASIN=codigo,
+            EAN=numero_modelo,
+        )
 
 ############################################################### OHPELUQUEROS ###############################################################
 
 # v2.0
+
+
 class OhPeluquerosSpider(scrapy.Spider):
     name = "ohpeluqueros"
     start_urls = ["https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680165461&ref=sr_pg_1"]
