@@ -1,5 +1,5 @@
 
-## v1.2 Lanza Scripts Multithreading en diferentes nucleos
+# v1.2 Lanza Scripts Multithreading en diferentes nucleos
 
 import os
 import sys
@@ -11,23 +11,28 @@ import concurrent.futures
 aranas = ['ohpeluqueros', 'pcprofesional', 'goodcarecosmetics', 'levanitashop',
           'luileibeauty', 'dudebeauty', 'kapylook', 'hairlowers', 'corradoequipe']
 
+
 def lanzar_arana(arana):
     comando = f'scrapy crawl {arana} -o {arana}.csv'
     subprocess.run(comando, shell=True)
+
 
 def lanzar_aranas():
     with concurrent.futures.ProcessPoolExecutor(max_workers=3) as executor:
         executor.map(lanzar_arana, aranas)
 
+
 def crear_carpeta(ruta_carpeta):
     if not os.path.exists(ruta_carpeta):
         os.makedirs(ruta_carpeta)
+
 
 def mover_archivos(nombres_archivos, origen, destino):
     for nombre_archivo in nombres_archivos:
         ruta_archivo_origen = os.path.join(origen, nombre_archivo)
         ruta_archivo_destino = os.path.join(destino, nombre_archivo)
         shutil.move(ruta_archivo_origen, ruta_archivo_destino)
+
 
 ruta_actual = os.path.dirname(os.path.abspath(__file__))
 entorno = os.path.join(ruta_actual, 'venv', 'Scripts', 'activate_this.py')
