@@ -2,7 +2,6 @@ import scrapy
 import re
 import random
 import time
-from fake_useragent import UserAgent
 from scrapy.spiders import Spider
 from scrapy import Request
 import datetime
@@ -10,35 +9,39 @@ from scrapy_splash import SplashRequest
 
 # docker run -p 8050:8050 scrapinghub/splash
 
+
 class BaseSpider(scrapy.Spider):
     def __init__(self, distribuidor: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.distribuidor = distribuidor
         self.unique_asins = set()
         self.visited_pages = set()
-        self.current_page = 1
-        self.ua = UserAgent()
+        self.current_page = 0  # Cambiar esto de 1 a 0
         self.custom_settings = {
             "USER_AGENT": self.user_agents
         }
 
     @property
     def user_agents(self):
-        return self.ua.random
+        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
 
     def start_requests(self):
         script = """
         function main(splash, args)
-          assert(splash:go(args.url))
-          assert(splash:wait(args.wait))
-          return splash:html()
+        assert(splash:go(args.url))
+        assert(splash:wait(args.wait))
+        return splash:html()
         end
         """
         for url in self.start_urls:
-            yield SplashRequest(url, self.parse, endpoint='execute', args={'lua_source': script, 'wait': 1})
+            yield SplashRequest(url, self.parse, endpoint='execute', args={'lua_source': script, 'wait': 1}, meta={'distribuidor': self.distribuidor})
 
     def parse(self, response):
+        distribuidor = response.meta['distribuidor']
         products = response.xpath("//div[contains(@class, 's-result-item')]")
+
+        if not products:  # Añadir esta condición para verificar si hay productos en la página
+            return
 
         for product in products:
             product_url = self.extract_product_url(product)
@@ -50,13 +53,13 @@ class BaseSpider(scrapy.Spider):
                 yield req
                 time.sleep(random.uniform(1, 3))
 
-        siguiente_pagina = self.extract_next_page(response)
+        siguiente_pagina = self.current_page + 1
+        next_page_url = self.start_urls[0] + f"&page={siguiente_pagina}"
+
         if siguiente_pagina:
             self.visited_pages.add(siguiente_pagina)
             self.current_page += 1
-            next_page_url = self.start_urls[0].rsplit(
-                '&', 1)[0] + f"&page={self.current_page}"
-            yield response.follow(next_page_url, self.parse)
+            yield response.follow(next_page_url, self.parse, meta={'distribuidor': distribuidor})
 
     def parse_product(self, response, precio):
         codigo = self.extract_codigo(response)
@@ -97,9 +100,9 @@ class BaseSpider(scrapy.Spider):
             return float(precio_str.replace(',', '.'))
         return None
 
-    @staticmethod
-    def extract_next_page(response):
-        return response.xpath("//div[contains(@class, 's-pagination')]//a[contains(@class, 's-pagination-item') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
+    # @staticmethod
+    # def extract_next_page(response):
+    #     return response.xpath("//div[contains(@class, 's-pagination')]//a[contains(@class, 's-pagination-item') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
 
     @staticmethod
     def extract_nombre(response):
@@ -131,6 +134,13 @@ class BaseSpider(scrapy.Spider):
             if match:
                 return match.group(0)
         return None
+
+    # @staticmethod
+    # def is_valid_distributor(product, distributor):
+    #     product_distributor = product.xpath(".//span[contains(@class, 's-warehouse-text')]/text()").get()
+    #     if product_distributor and distributor.lower() in product_distributor.lower():
+    #         return True
+    #     return False
 
 
 class OhPeluquerosSpider(BaseSpider):
