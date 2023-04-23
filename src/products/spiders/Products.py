@@ -40,9 +40,6 @@ class BaseSpider(scrapy.Spider):
         distribuidor = response.meta['distribuidor']
         products = response.xpath("//div[contains(@class, 's-result-item')]")
 
-        if not products:  # Añadir esta condición para verificar si hay productos en la página
-            return
-
         for product in products:
             product_url = self.extract_product_url(product)
             precio = self.extract_precio(product)
@@ -52,6 +49,12 @@ class BaseSpider(scrapy.Spider):
                     product_url, self.parse_product, cb_kwargs=dict(precio=precio))
                 yield req
                 time.sleep(random.uniform(1, 3))
+
+        siguiente_deshabilitado = response.xpath(
+            "//li[contains(@class, 's-pagination-item s-pagination-disabled')]").get()
+
+        if siguiente_deshabilitado:
+            return
 
         siguiente_pagina = self.current_page + 1
         next_page_url = self.start_urls[0] + f"&page={siguiente_pagina}"
@@ -100,10 +103,6 @@ class BaseSpider(scrapy.Spider):
             return float(precio_str.replace(',', '.'))
         return None
 
-    # @staticmethod
-    # def extract_next_page(response):
-    #     return response.xpath("//div[contains(@class, 's-pagination')]//a[contains(@class, 's-pagination-item') and not(contains(@class, 's-pagination-disabled'))]/@href").get()
-
     @staticmethod
     def extract_nombre(response):
         nombre = response.xpath("//*[@id='productTitle']/text()").get()
@@ -134,13 +133,6 @@ class BaseSpider(scrapy.Spider):
             if match:
                 return match.group(0)
         return None
-
-    # @staticmethod
-    # def is_valid_distributor(product, distributor):
-    #     product_distributor = product.xpath(".//span[contains(@class, 's-warehouse-text')]/text()").get()
-    #     if product_distributor and distributor.lower() in product_distributor.lower():
-    #         return True
-    #     return False
 
 
 class OhPeluquerosSpider(BaseSpider):
