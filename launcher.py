@@ -15,7 +15,7 @@ def lanzar_arana(arana):
 
 
 def lanzar_aranas():
-    with concurrent.futures.ProcessPoolExecutor(max_workers=3) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
         executor.map(lanzar_arana, aranas)
 
 

@@ -2,31 +2,29 @@ import scrapy
 import re
 import random
 import time
+from fake_useragent import UserAgent
 from scrapy.spiders import Spider
 from scrapy import Request
 import datetime
 from scrapy_splash import SplashRequest
 
-
 # docker run -p 8050:8050 scrapinghub/splash
 
-
 class BaseSpider(scrapy.Spider):
-    def __init__(self, distribuidor, *args, **kwargs):
+    def __init__(self, distribuidor: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.distribuidor = distribuidor
         self.unique_asins = set()
         self.visited_pages = set()
         self.current_page = 1
+        self.ua = UserAgent()
         self.custom_settings = {
             "USER_AGENT": self.user_agents
         }
 
     @property
     def user_agents(self):
-        with open('user-agents.txt') as f:
-            agents = f.read().split("\n")
-            return random.choice(agents)
+        return self.ua.random
 
     def start_requests(self):
         script = """
@@ -137,8 +135,7 @@ class BaseSpider(scrapy.Spider):
 
 class OhPeluquerosSpider(BaseSpider):
     name = "ohpeluqueros"
-    start_urls = [
-        "https://www.amazon.es/s?k=davines&i=merchant-items&me=A1XXL66418R4KD&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680165461&ref=sr_pg_1"]
+    start_urls = ["https://www.amazon.es/s?k=davines&me=A1XXL66418R4KD"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(distribuidor="OhPeluqueros", *args, **kwargs)
@@ -146,8 +143,7 @@ class OhPeluquerosSpider(BaseSpider):
 
 class PyCProfesionalSpider(BaseSpider):
     name = "pcprofesional"
-    start_urls = [
-        "https://www.amazon.es/s?k=Davines&i=merchant-items&me=A20JMG3VL3S0SU&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680079048&ref=sr_pg_1"]
+    start_urls = ["https://www.amazon.es/s?k=Davines&me=A20JMG3VL3S0SU"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(distribuidor="P&CProfesional", *args, **kwargs)
@@ -155,7 +151,7 @@ class PyCProfesionalSpider(BaseSpider):
 
 class GoodCareCosmeticsSpider(BaseSpider):
     name = "goodcarecosmetics"
-    start_urls = ["https://www.amazon.es/s?k=davines&i=merchant-items&me=A2Q9EED12NJ5E7&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680171512&ref=sr_pg_1"]
+    start_urls = ["https://www.amazon.es/s?k=davines&me=A2Q9EED12NJ5E7"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(distribuidor="P&CProfesional", *args, **kwargs)
@@ -163,8 +159,7 @@ class GoodCareCosmeticsSpider(BaseSpider):
 
 class LevanitaShopSpider(BaseSpider):
     name = "levanitashop"
-    start_urls = [
-        "https://www.amazon.es/s?i=merchant-items&me=ARU4EY0JBW4QF&rh=p_4%3ADavines&dc&marketplaceID=A1RKKUPIHCS9HS&qid=1680171671&ref=sr_pg_1"]
+    start_urls = ["https://www.amazon.es/s?k=davines&me=ARU4EY0JBW4QF"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(distribuidor="LevitaShop", *args, **kwargs)
@@ -172,8 +167,7 @@ class LevanitaShopSpider(BaseSpider):
 
 class LuiyLeiBeautySpider(BaseSpider):
     name = "luileibeauty"
-    start_urls = [
-        "https://www.amazon.es/s?i=merchant-items&me=A39TAVUW4PU0QM&rh=p_4%3ADavines&dc&marketplaceID=A1RKKUPIHCS9HS&qid=1680171845&ref=sr_pg_1"]
+    start_urls = ["https://www.amazon.es/s?k=davines&me=A39TAVUW4PU0QM"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(distribuidor="Lui&LeiBeauty", *args, **kwargs)
@@ -181,7 +175,7 @@ class LuiyLeiBeautySpider(BaseSpider):
 
 class DudeBeautySpider(BaseSpider):
     name = "dudebeauty"
-    start_urls = ["https://www.amazon.es/s?k=davines&i=merchant-items&me=A37QTNEZV7YXX7&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680171983&ref=sr_pg_1"]
+    start_urls = ["https://www.amazon.es/s?k=davines&me=A37QTNEZV7YXX7"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(distribuidor="DudeBeauty", *args, **kwargs)
@@ -189,7 +183,7 @@ class DudeBeautySpider(BaseSpider):
 
 class KapylookSpider(BaseSpider):
     name = "kapylook"
-    start_urls = ["https://www.amazon.es/s?k=davines&i=merchant-items&me=A1BO9PIJML2J6T&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&qid=1680172110&ref=sr_pg_1"]
+    start_urls = ["https://www.amazon.es/s?k=davines&me=A1BO9PIJML2J6T"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(distribuidor="KappyLook", *args, **kwargs)
@@ -197,8 +191,7 @@ class KapylookSpider(BaseSpider):
 
 class HairLlowersSpider(BaseSpider):
     name = "hairlowers"
-    start_urls = [
-        "https://www.amazon.es/s?k=davines&me=A2HQ75FBFCD779&__mk_es_ES=%C3%85M%C3%85%C5%BD%C3%95%C3%91&ref=nb_sb_noss"]
+    start_urls = ["https://www.amazon.es/s?k=davines&me=A2HQ75FBFCD779"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(distribuidor="HairLowers", *args, **kwargs)
@@ -206,8 +199,7 @@ class HairLlowersSpider(BaseSpider):
 
 class CorradoEquipeSpider(BaseSpider):
     name = "corradoequipe"
-    start_urls = [
-        "https://www.amazon.es/s?i=merchant-items&me=A39L21XYESRIXS&rh=p_4%3ADavines&dc&marketplaceID=A1RKKUPIHCS9HS&qid=1680172429&ref=sr_pg_1"]
+    start_urls = ["https://www.amazon.es/s?k=davines&me=A39L21XYESRIXS"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(distribuidor="CorradoEquipe", *args, **kwargs)
