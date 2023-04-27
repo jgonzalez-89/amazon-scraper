@@ -16,25 +16,19 @@ class ProductScraper(scrapy.Spider):
         self.asins = [
             "B00ZPQ129C", "B06ZZ6CDY1", "B00GCCQ3DI", "B011DCMQZA"
         ]
-        self.start_urls = [f"https://www.amazon.es/dp/{asin}" for asin in self.asins]
 
     def start_requests(self):
         script = """
         function main(splash, args)
             splash:go(args.url)
             splash:wait(args.wait)
-
-            local element = splash:select('//*[@id="olpLinkWidget_feature_div"]/div[2]/span/a/div/div')
-            if element then
-                element:mouse_click()
-                splash:wait(args.wait)
-            end
-
             return splash:html()
         end
         """
-        for url in self.start_urls:
+        for asin in self.asins:
+            url = f"https://www.amazon.es/gp/offer-listing/{asin}"
             yield SplashRequest(url, self.parse, endpoint='execute', args={'lua_source': script, 'wait': 1})
+
 
     def parse(self, response):
         codigo = self.extract_codigo(response)
@@ -44,22 +38,27 @@ class ProductScraper(scrapy.Spider):
         imagen = self.extract_imagen(response)
         numero_modelo = self.extract_numero_modelo(response)
 
-        other_distributors = response.xpath("//div[contains(@class, 'a-box-inner')]")
+        other_distributors = response.xpath("//*[@id='aod-offer']")
+        vendedores = []
+        precios = []
         for distributor in other_distributors:
-            other_price = distributor.xpath(".//span[@class='a-price']/span[@class='a-offscreen']/text()").get()
-            shipping_info = distributor.xpath(".//span[contains(text(), 'Envío GRATIS')]/text()").get()
+            other_price = distributor.xpath(".//span[contains(@class, 'a-price')]/span[contains(@class, 'a-offscreen')]/text()").get()
+            vendedor = distributor.xpath(".//*[@id='aod-offer-soldBy']/div/div/div[2]/a/text()").get()
 
             if other_price:
                 other_price = float(other_price.replace('€', '').replace(',', '.'))
+                precios.append(other_price)
 
-            is_free_shipping_for_prime = shipping_info is not None
-
+            if vendedor:
+                vendedores.append(vendedor.strip())
 
         yield {
             "fecha": fecha,
             "imagen": imagen,
             "nombre": nombre,
             "precio": precio,
+            "vendedores": vendedores,
+            "precios": precios,
             "ASIN": codigo,
             "EAN": numero_modelo
         }
