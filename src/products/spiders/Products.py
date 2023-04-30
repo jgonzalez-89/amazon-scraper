@@ -7,6 +7,7 @@ from scrapy import Request
 import datetime
 from scrapy_splash import SplashRequest
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
+from scrapy.utils.response import open_in_browser
 
 
 class ProductScraper(scrapy.Spider):
@@ -14,9 +15,7 @@ class ProductScraper(scrapy.Spider):
 
     def __init__(self, asin=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.asin = asin
-        # self.asins = [
-        #     "B00U1JHWR4", "B07ZJ82DFL", "B0073FO9AM", "B0073FD66A", "B00GTW4S3S", "B011DCMQZA", "B06ZZ6CDY1", "B0813DB98Y", "B00GTW4QQ2", "B07ZL56NS7", "B06XSF4R1X", "B08SXSWC7Y", "B00GCCQ3DI", "B00ZPQ129C"]
+        self.asin = [asin] if asin else []
 
     def start_requests(self):
         script = """
@@ -49,7 +48,7 @@ function main(splash, args)
     return splash:html()
 end
         """
-        for asin in self.asins:
+        for asin in self.asin:
             url = f"https://www.amazon.es/gp/offer-listing/{asin}"
             yield SplashRequest(url, self.parse, endpoint='execute', args={'lua_source': script, 'wait': 8}, meta={'retry_times': 0})
 
@@ -82,10 +81,11 @@ end
             # Intenta de nuevo si no se encontraron vendedores o precios
             retry_times = response.meta.get('retry_times', 0) + 1
 
-            if retry_times <= 3:  # Puedes ajustar el número máximo de intentos
-                self.logger.info(
-                    f'Reintentando {response.url} (intento {retry_times})')
+            if retry_times <= 5:  # Puedes ajustar el número máximo de intentos
+                self.logger.info(f'Reintentando {response.url} (intento {retry_times})')
+                open_in_browser(response)  # Abre la respuesta en el navegador
                 yield SplashRequest(response.url, self.parse, endpoint='execute', args={'lua_source': response.request.meta['splash']['args']['lua_source'], 'wait': 8}, meta={'retry_times': retry_times})
+                return
         else:
             yield {
                 "fecha": fecha,
