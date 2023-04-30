@@ -6,63 +6,97 @@ from scrapy.spiders import Spider
 from scrapy import Request
 import datetime
 from scrapy_splash import SplashRequest
+from scrapy.downloadermiddlewares.retry import RetryMiddleware
 
-# docker run -p 8050:8050 scrapinghub/splash
+
 class ProductScraper(scrapy.Spider):
     name = "product_scraper"
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, asin=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.asins = [
-            "B00ZPQ129C", "B06ZZ6CDY1", "B00GCCQ3DI", "B011DCMQZA"
-        ]
+        self.asin = asin
+        # self.asins = [
+        #     "B00U1JHWR4", "B07ZJ82DFL", "B0073FO9AM", "B0073FD66A", "B00GTW4S3S", "B011DCMQZA", "B06ZZ6CDY1", "B0813DB98Y", "B00GTW4QQ2", "B07ZL56NS7", "B06XSF4R1X", "B08SXSWC7Y", "B00GCCQ3DI", "B00ZPQ129C"]
 
     def start_requests(self):
         script = """
-        function main(splash, args)
-            splash:go(args.url)
-            splash:wait(args.wait)
-            return splash:html()
-        end
+function main(splash, args)
+    splash:go(args.url)
+    splash:runjs([[
+        function main(resolve, reject) {
+            var el = document.querySelector('#aod-pinned-offer > div');
+            if (el) {
+                resolve();
+            } else {
+                var observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.addedNodes.length) {
+                            for (var i = 0; i < mutation.addedNodes.length; i++) {
+                                if (mutation.addedNodes[i].querySelector('#aod-pinned-offer > div')) {
+                                    observer.disconnect();
+                                    resolve();
+                                    return;
+                                }
+                            }
+                        }
+                    });
+                });
+                observer.observe(document.body, {childList: true, subtree: true});
+            }
+        }
+    ]])
+    splash:wait_for_resume("main();")
+    return splash:html()
+end
         """
         for asin in self.asins:
             url = f"https://www.amazon.es/gp/offer-listing/{asin}"
-            yield SplashRequest(url, self.parse, endpoint='execute', args={'lua_source': script, 'wait': 1})
-
+            yield SplashRequest(url, self.parse, endpoint='execute', args={'lua_source': script, 'wait': 8}, meta={'retry_times': 0})
 
     def parse(self, response):
-        codigo = self.extract_codigo(response)
+        codigo_ASIN = self.extract_codigo(response)
         fecha = datetime.datetime.now().strftime("%d-%m-%Y")
         nombre = self.extract_nombre(response)
-        precio = self.extract_precio(response)
         imagen = self.extract_imagen(response)
-        numero_modelo = self.extract_numero_modelo(response)
+        numero_EAN = self.extract_EAN(response)
 
-        other_distributors = response.xpath("//*[@id='aod-offer']")
+        offers = response.xpath(
+            "//*[@id='aod-pinned-offer']|//*[@id='aod-offer']")
         vendedores = []
         precios = []
-        for distributor in other_distributors:
-            other_price = distributor.xpath(".//span[contains(@class, 'a-price')]/span[contains(@class, 'a-offscreen')]/text()").get()
-            vendedor = distributor.xpath(".//*[@id='aod-offer-soldBy']/div/div/div[2]/a/text()").get()
 
-            if other_price:
-                other_price = float(other_price.replace('€', '').replace(',', '.'))
-                precios.append(other_price)
+        for offer in offers:
+            price = offer.xpath(
+                ".//span[contains(@class, 'a-price')]/span[contains(@class, 'a-offscreen')]/text()").get()
+            vendor = offer.xpath(
+                ".//*[@id='aod-offer-soldBy']/div/div/div[2]/a/text()").get()
 
-            if vendedor:
-                vendedores.append(vendedor.strip())
+            if price:
+                price = float(price.replace('€', '').replace(',', '.'))
+                precios.append(price)
 
-        yield {
-            "fecha": fecha,
-            "imagen": imagen,
-            "nombre": nombre,
-            "precio": precio,
-            "vendedores": vendedores,
-            "precios": precios,
-            "ASIN": codigo,
-            "EAN": numero_modelo
-        }
-        time.sleep(random.uniform(1, 3))
+            if vendor:
+                vendedores.append(vendor.strip())
+
+        if not vendedores or not precios:
+            # Intenta de nuevo si no se encontraron vendedores o precios
+            retry_times = response.meta.get('retry_times', 0) + 1
+
+            if retry_times <= 3:  # Puedes ajustar el número máximo de intentos
+                self.logger.info(
+                    f'Reintentando {response.url} (intento {retry_times})')
+                yield SplashRequest(response.url, self.parse, endpoint='execute', args={'lua_source': response.request.meta['splash']['args']['lua_source'], 'wait': 8}, meta={'retry_times': retry_times})
+        else:
+            yield {
+                "fecha": fecha,
+                "imagen": imagen,
+                "nombre": nombre,
+                "vendedores": vendedores,
+                "precios": precios,
+                "ASIN": codigo_ASIN,
+                "EAN": numero_EAN
+            }
+            time.sleep(random.uniform(1, 3))
 
     @staticmethod
     def extract_precio(response):
@@ -81,7 +115,7 @@ class ProductScraper(scrapy.Spider):
         return None
 
     @staticmethod
-    def extract_numero_modelo(response):
+    def extract_EAN(response):
         span_elements = response.xpath("//span/text()").getall()
         numero_modelo_regex = r"\b\d{13}\b"
         for element in span_elements:
@@ -104,7 +138,148 @@ class ProductScraper(scrapy.Spider):
                 return match.group(0)
         return None
 
+# import scrapy
+# import re
+# import random
+# import time
+# from scrapy.spiders import Spider
+# from scrapy import Request
+# import datetime
+# from scrapy_splash import SplashRequest
+# from scrapy.downloadermiddlewares.retry import RetryMiddleware
 
+
+# class ProductScraper(scrapy.Spider):
+#     name = "product_scraper"
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+
+#         # self.asins = ["B07ZL56NS7"]
+#         self.asins = [
+#             "B00U1JHWR4", "B07ZJ82DFL", "B0073FO9AM", "B0073FD66A", "B00GTW4S3S", "B011DCMQZA", "B06ZZ6CDY1", "B0813DB98Y", "B00GTW4QQ2", "B07ZL56NS7", "B06XSF4R1X", "B08SXSWC7Y", "B00GCCQ3DI", "B00ZPQ129C"]
+
+#     def start_requests(self):
+#         script = """
+# function main(splash, args)
+#     splash:go(args.url)
+#     splash:runjs([[
+#         function main(resolve, reject) {
+#             var el = document.querySelector('#aod-pinned-offer > div');
+#             if (el) {
+#                 resolve();
+#             } else {
+#                 var observer = new MutationObserver(function(mutations) {
+#                     mutations.forEach(function(mutation) {
+#                         if (mutation.addedNodes.length) {
+#                             for (var i = 0; i < mutation.addedNodes.length; i++) {
+#                                 if (mutation.addedNodes[i].querySelector('#aod-pinned-offer > div')) {
+#                                     observer.disconnect();
+#                                     resolve();
+#                                     return;
+#                                 }
+#                             }
+#                         }
+#                     });
+#                 });
+#                 observer.observe(document.body, {childList: true, subtree: true});
+#             }
+#         }
+#     ]])
+#     splash:wait_for_resume("main();")
+#     return splash:html()
+# end
+#         """
+#         for asin in self.asins:
+#             url = f"https://www.amazon.es/gp/offer-listing/{asin}"
+#             yield SplashRequest(url, self.parse, endpoint='execute', args={'lua_source': script, 'wait': 8})
+
+#     def parse(self, response):
+#         codigo_ASIN = self.extract_codigo(response)
+#         fecha = datetime.datetime.now().strftime("%d-%m-%Y")
+#         nombre = self.extract_nombre(response)
+#         imagen = self.extract_imagen(response)
+#         numero_EAN = self.extract_EAN(response)
+
+#         offers = response.xpath(
+#             "//*[@id='aod-pinned-offer']|//*[@id='aod-offer']")
+#         vendedores = []
+#         precios = []
+
+#         for offer in offers:
+#             price = offer.xpath(
+#                 ".//span[contains(@class, 'a-price')]/span[contains(@class, 'a-offscreen')]/text()").get()
+#             vendor = offer.xpath(
+#                 ".//*[@id='aod-offer-soldBy']/div/div/div[2]/a/text()").get()
+
+#             if price:
+#                 price = float(price.replace('€', '').replace(',', '.'))
+#                 precios.append(price)
+
+#             if vendor:
+#                 vendedores.append(vendor.strip())
+
+#         if not vendedores or not precios:
+#             # Intenta de nuevo si no se encontraron vendedores o precios
+#             retryreq = response.request.copy()
+#             retryreq.dont_filter = True
+#             retryreq.priority = response.request.priority + 1
+#             retryreq.meta['retry_times'] = response.meta.get('retry_times', 0) + 1
+
+#             if retryreq.meta['retry_times'] <= 3:  # Puedes ajustar el número máximo de intentos
+#                 self.logger.info(f'Reintentando {response.url} (intento {retryreq.meta["retry_times"]})')
+#                 yield retryreq
+#         else:
+#             yield {
+#                 "fecha": fecha,
+#                 "imagen": imagen,
+#                 "nombre": nombre,
+#                 "vendedores": vendedores,
+#                 "precios": precios,
+#                 "ASIN": codigo_ASIN,
+#                 "EAN": numero_EAN
+#             }
+#             time.sleep(random.uniform(1, 3))
+
+#     @staticmethod
+#     def extract_precio(response):
+#         precio_str = response.xpath(
+#             ".//span[contains(@class, 'a-price-whole')]/text()").get()
+#         if precio_str is not None:
+#             precio_str = precio_str.strip()
+#             return float(precio_str.replace(',', '.'))
+#         return None
+
+#     @staticmethod
+#     def extract_nombre(response):
+#         nombre = response.xpath("//*[@id='productTitle']/text()").get()
+#         if nombre:
+#             return nombre.replace('"', '').lower().strip()
+#         return None
+
+#     @staticmethod
+#     def extract_EAN(response):
+#         span_elements = response.xpath("//span/text()").getall()
+#         numero_modelo_regex = r"\b\d{13}\b"
+#         for element in span_elements:
+#             match = re.search(numero_modelo_regex, element)
+#             if match:
+#                 return match.group(0)
+#         return None
+
+#     @staticmethod
+#     def extract_imagen(response):
+#         return response.xpath("//*[@id='landingImage']/@src").get()
+
+#     @staticmethod
+#     def extract_codigo(response):
+#         span_elements = response.xpath("//span/text()").getall()
+#         codigo_regex = r"\b[A-Z0-9]{10}\b"
+#         for element in span_elements:
+#             match = re.search(codigo_regex, element)
+#             if match:
+#                 return match.group(0)
+#         return None
 
 
 # version 2.1
